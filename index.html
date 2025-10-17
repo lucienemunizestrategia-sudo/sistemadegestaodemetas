@@ -568,8 +568,7 @@ button:disabled {
 // ============================================
 // CONFIGURAÇÃO
 // ============================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygYLEnyXroW_oP86mZXRkL0ElYcqFKj9MF0seooXSLtqKtAtnyjI7O4b7vbePEBhGg/exec';
-
+const url = new URL('https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec');
 // ============================================
 // VARIÁVEIS GLOBAIS
 // ============================================
@@ -640,7 +639,7 @@ async function carregarTodasMetas() {
 
 async function salvarMeta(meta, local) {
   try {
-    const url = new URL ('https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec');
+   const url = new URL('https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec');
     url.searchParams.append('action', 'add');
     url.searchParams.append('local', local);
     url.searchParams.append('e', meta.e || '');
