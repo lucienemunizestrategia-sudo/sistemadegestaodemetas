@@ -640,35 +640,38 @@ async function carregarTodasMetas() {
 
 async function salvarMeta(meta, local) {
   try {
-    // Usar GET com query string (funciona melhor com Apps Script)
-    const params = new URLSearchParams({
-      action: 'add',
-      local: local,
-      e: meta.e || '',
-      m: meta.m || '',
-      c: meta.c || '',
-      st: meta.st || 'Em andamento',
-      a: meta.a || '',
-      d: meta.d || '',
-      o: meta.o || '',
-      l: meta.l || '',
-      listaPresenca: meta.listaPresenca || '',
-      fotos: meta.fotos || '',
-      materialDivulgacao: meta.materialDivulgacao || ''
-    });
+    const url = new URL 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
+    url.searchParams.append('action', 'add');
+    url.searchParams.append('local', local);
+    url.searchParams.append('e', meta.e || '');
+    url.searchParams.append('m', meta.m || '');
+    url.searchParams.append('c', meta.c || '');
+    url.searchParams.append('st', meta.st || 'Em andamento');
+    url.searchParams.append('a', meta.a || '');
+    url.searchParams.append('d', meta.d || '');
+    url.searchParams.append('o', meta.o || '');
+    url.searchParams.append('l', meta.l || '');
+    url.searchParams.append('listaPresenca', meta.listaPresenca || '');
+    url.searchParams.append('fotos', meta.fotos || '');
+    url.searchParams.append('materialDivulgacao', meta.materialDivulgacao || '');
     
-    const url = SCRIPT_URL + '?' + params.toString();
+    console.log('Enviando para:', url.toString());
     
-    console.log('=== DEBUG: URL completa ===');
-    console.log(url);
+    const response = await fetch(url.toString());
+    const result = await response.json();
     
-    // Usar imagem invisível para fazer a requisição
-    const img = new Image();
-    img.src = url;
+    console.log('Resposta recebida:', result);
     
-    return true;
+    if (result.success) {
+      await new Promise(r => setTimeout(r, 2000));
+      await carregarTodasMetas();
+      return true;
+    } else {
+      throw new Error(result.message || 'Erro ao salvar na planilha');
+    }
   } catch (error) {
-    console.error('Erro ao salvar:', error);
+    console.error('Erro completo:', error);
+    alert('Erro ao salvar: ' + error.message);
     return false;
   }
 }
