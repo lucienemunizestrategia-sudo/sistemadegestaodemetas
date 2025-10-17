@@ -410,7 +410,7 @@ button:disabled {
 
 .meta-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmin(250px, 1fr));
   gap: 16px;
   margin: 20px 0;
   padding: 20px;
@@ -566,7 +566,7 @@ button:disabled {
 
 <script>
 // ============================================
-// CONFIGURAÇÃO
+// CONFIGURAÇÃO - VOCÊ PODE MEXER AQUI
 // ============================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
 
@@ -575,7 +575,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7G
 // ============================================
 var dados = {
   ok: false,
-  visualizacao: 'dashboard', // dashboard, mare, jacarezinho, cadastro
+  visualizacao: 'dashboard',
   metasMare: [],
   metasJacarezinho: [],
   mostrarForm: false,
@@ -589,7 +589,7 @@ var dados = {
 };
 
 // ============================================
-// FUNÇÕES DE API
+// FUNÇÕES DE API - CORRIGIDO
 // ============================================
 
 async function carregarTodasMetas() {
@@ -620,63 +620,46 @@ async function carregarTodasMetas() {
 
 async function salvarMeta(meta, local) {
   try {
-    // Criar formulário invisível
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = SCRIPT_URL;
-    form.target = 'hidden_iframe';
-    form.style.display = 'none';
+    // Preparar dados como URLSearchParams
+    const formData = new URLSearchParams();
+    formData.append('action', 'add');
+    formData.append('local', local);
+    formData.append('e', meta.e || '');
+    formData.append('m', meta.m || '');
+    formData.append('c', meta.c || '');
+    formData.append('st', meta.st || 'Em andamento');
+    formData.append('a', meta.a || '');
+    formData.append('d', meta.d || '');
+    formData.append('o', meta.o || '');
+    formData.append('l', meta.l || '');
+    formData.append('listaPresenca', meta.listaPresenca || '');
+    formData.append('fotos', meta.fotos || '');
+    formData.append('materialDivulgacao', meta.materialDivulgacao || '');
     
-    // Adicionar campos
-    const fields = {
-      action: 'add',
-      local: local,
-      e: meta.e,
-      m: meta.m,
-      c: meta.c,
-      st: meta.st,
-      a: meta.a,
-      d: meta.d,
-      o: meta.o,
-      l: meta.l,
-      listaPresenca: meta.listaPresenca || '',
-      fotos: meta.fotos || '',
-      materialDivulgacao: meta.materialDivulgacao || ''
-    };
+    console.log('=== DEBUG: Enviando dados via POST ===');
+    console.log('Território:', local);
+    console.log('URL:', SCRIPT_URL);
     
-    console.log('=== DEBUG: Enviando dados ===');
-    console.log(fields);
-    
-    Object.keys(fields).forEach(key => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = fields[key];
-      form.appendChild(input);
+    // Enviar via fetch
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: formData,
+      redirect: 'follow'
     });
     
-    // Criar iframe invisível
-    let iframe = document.getElementById('hidden_iframe');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.name = 'hidden_iframe';
-      iframe.id = 'hidden_iframe';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    const result = await response.json();
+    console.log('Resposta do servidor:', result);
+    
+    if (result.success) {
+      return true;
+    } else {
+      console.error('Erro na resposta:', result.message);
+      alert('Erro ao salvar: ' + result.message);
+      return false;
     }
-    
-    // Adicionar form ao body e enviar
-    document.body.appendChild(form);
-    form.submit();
-    
-    // Remover form após envio
-    setTimeout(() => {
-      document.body.removeChild(form);
-    }, 1000);
-    
-    return true;
   } catch (error) {
     console.error('Erro ao salvar:', error);
+    alert('Erro de comunicação com o servidor. Verifique o console (F12).');
     return false;
   }
 }
@@ -1231,15 +1214,11 @@ async function salvarNovaMeta() {
   const sucesso = await salvarMeta(meta, territorio);
   
   if (sucesso) {
-    // Aguardar 3 segundos para o Google processar
-    setTimeout(async () => {
-      await carregarTodasMetas();
-      alert('Meta cadastrada! Verifique na planilha do Google Sheets.');
-      dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
-      renderizar();
-    }, 3000);
+    alert('✅ Meta cadastrada com sucesso!');
+    await carregarTodasMetas();
+    dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
+    renderizar();
   } else {
-    alert('Erro ao salvar. Verifique o console (F12).');
     btnSalvar.disabled = false;
     btnSalvar.textContent = 'SALVAR META';
   }
