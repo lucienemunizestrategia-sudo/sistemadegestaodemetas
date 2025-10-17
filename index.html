@@ -1188,13 +1188,49 @@ async function salvarNovaMeta() {
     return;
   }
   
-  const sucesso = await salvarMeta(meta, territorio);
+  console.log('=== DEBUG: Dados a enviar ===');
+  console.log('Território:', territorio);
+  console.log('Meta:', meta);
+  console.log('URL:', SCRIPT_URL);
   
-  if (sucesso) {
-    alert('Meta cadastrada com sucesso!');
-    dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
-    renderizar();
-  } else {
+  try {
+    const formData = new URLSearchParams({
+      action: 'add',
+      local: territorio,
+      ...meta
+    });
+    
+    console.log('=== DEBUG: FormData ===');
+    console.log(formData.toString());
+    
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData
+    });
+    
+    console.log('=== DEBUG: Resposta ===');
+    console.log('Status:', response.status);
+    console.log('Type:', response.type);
+    
+    // Com mode: 'no-cors', não conseguimos ler a resposta
+    // Mas se chegou aqui sem erro, provavelmente funcionou
+    
+    // Aguardar 2 segundos e recarregar dados
+    setTimeout(async () => {
+      await carregarTodasMetas();
+      alert('Meta cadastrada! Verifique na planilha se apareceu.');
+      dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
+      renderizar();
+    }, 2000);
+    
+  } catch (error) {
+    console.error('=== DEBUG: Erro ao salvar ===');
+    console.error(error);
+    alert('Erro ao salvar: ' + error.message);
     btnSalvar.disabled = false;
     btnSalvar.textContent = 'SALVAR META';
   }
