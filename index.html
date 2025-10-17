@@ -659,15 +659,16 @@ async function salvarMeta(meta, local) {
     console.log('Dados:', params);
 
     const response = await fetch(SCRIPT_URL, {
-      method: 'POST', // Alterado de GET para POST
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(params) // Envia os parâmetros no corpo da requisição
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, // Mude para application/json
+      body: JSON.stringify(params) // Envie como uma string JSON
     });
 
-    const result = await response.json(); // Espera uma resposta JSON
+    const result = await response.json();
 
     if (result.success) {
       console.log('Meta salva com sucesso!');
+      alert('Meta salva com sucesso!');
       await carregarTodasMetas();
       return true;
     } else {
@@ -682,6 +683,7 @@ async function salvarMeta(meta, local) {
     return false;
   }
 }
+
 
 async function apagarMeta(id, local) {
   try {
