@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão de Metas e Evidências - Prospera Rio</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { 
   margin: 0; 
@@ -246,6 +248,11 @@ button:disabled {
   padding: 16px 32px;
 }
 
+.btn-action {
+  background: var(--amarelo-acento);
+  color: var(--azul-escuro);
+}
+
 .btn-secondary {
   background: #6c757d;
 }
@@ -477,11 +484,6 @@ button:disabled {
   color: var(--branco);
 }
 
-.territorio-badge.maré {
-  background: #00B7D7;
-  color: var(--branco);
-}
-
 .territorio-badge.jacarezinho {
   background: #ECC203;
   color: var(--azul-escuro);
@@ -518,8 +520,15 @@ button:disabled {
   font-weight: 700;
 }
 
+.export-section {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
 @media print {
-  .hdr-btns, .filters, button {
+  .hdr-btns, .filters, .export-section, button {
     display: none !important;
   }
 }
@@ -549,7 +558,6 @@ button:disabled {
   .meta-info-grid {
     grid-template-columns: 1fr;
   }
-  
 }
 </style>
 </head>
@@ -557,29 +565,49 @@ button:disabled {
 <div id="app"></div>
 
 <script>
+// ============================================
+// CONFIGURAÇÃO
+// ============================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygYLEnyXroW_oP86mZXRkL0ElYcqFKj9MF0seooXSLtqKtAtnyjI7O4b7vbePEBhGg/exec';
 
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
 var dados = {
   ok: false,
-  visualizacao: 'dashboard',
+  visualizacao: 'dashboard', // dashboard, mare, jacarezinho, cadastro
   metasMare: [],
   metasJacarezinho: [],
+  mostrarForm: false,
   carregando: false,
-  filtros: { etapa: '', status: '', dataInicio: '', dataFim: '' }
+  filtros: {
+    etapa: '',
+    status: '',
+    dataInicio: '',
+    dataFim: ''
+  }
 };
+
+// ============================================
+// FUNÇÕES DE API
+// ============================================
 
 async function carregarTodasMetas() {
   dados.carregando = true;
   renderizar();
+  
   try {
     const [responseMare, responseJacare] = await Promise.all([
       fetch(SCRIPT_URL + '?action=get&local=Maré'),
       fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
     ]);
+    
     const resultMare = await responseMare.json();
     const resultJacare = await responseJacare.json();
+    
     if (resultMare.success) dados.metasMare = resultMare.data || [];
     if (resultJacare.success) dados.metasJacarezinho = resultJacare.data || [];
+    
     dados.carregando = false;
     renderizar();
   } catch (error) {
@@ -595,9 +623,15 @@ async function salvarMeta(meta, local) {
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'add', local: local, ...meta })
+      body: new URLSearchParams({
+        action: 'add',
+        local: local,
+        ...meta
+      })
     });
+    
     const result = await response.json();
+    
     if (result.success) {
       await carregarTodasMetas();
       return true;
@@ -616,9 +650,15 @@ async function apagarMeta(id, local) {
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'delete', local: local, id: id })
+      body: new URLSearchParams({
+        action: 'delete',
+        local: local,
+        id: id
+      })
     });
+    
     const result = await response.json();
+    
     if (result.success) {
       await carregarTodasMetas();
       return true;
@@ -632,12 +672,18 @@ async function apagarMeta(id, local) {
   }
 }
 
+// ============================================
+// FUNÇÕES DE ESTATÍSTICAS
+// ============================================
+
 function calcularEstatisticas(metas) {
   return {
     total: metas.length,
     emAndamento: metas.filter(m => m.st === 'Em andamento').length,
     encerradas: metas.filter(m => m.st === 'Encerrada').length,
-    mediaProgresso: metas.length > 0 ? Math.round(metas.reduce((acc, m) => acc + (parseInt(m.a) || 0), 0) / metas.length) : 0
+    mediaProgresso: metas.length > 0 
+      ? Math.round(metas.reduce((acc, m) => acc + (parseInt(m.a) || 0), 0) / metas.length)
+      : 0
   };
 }
 
@@ -667,15 +713,22 @@ function obterEtapasUnicas() {
   return etapas.sort();
 }
 
+// ============================================
+// FUNÇÕES DE EXPORTAÇÃO
+// ============================================
+
 function exportarParaExcel() {
   const metas = dados.visualizacao === 'mare' ? dados.metasMare :
                 dados.visualizacao === 'jacarezinho' ? dados.metasJacarezinho :
                 [...dados.metasMare, ...dados.metasJacarezinho];
-  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link Principal,Link Presença,Link Fotos,Link Divulgação\n';
+  
+  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link\n';
+  
   metas.forEach(meta => {
     const territorio = dados.metasMare.includes(meta) ? 'Maré' : 'Jacarezinho';
-    csv += `"${territorio}","${meta.e || ''}","${meta.m || ''}","${meta.c || ''}","${meta.st || ''}","${meta.a || ''}","${meta.d || ''}","${meta.o || ''}","${meta.l || ''}","${meta.lp || ''}","${meta.lf || ''}","${meta.ld || ''}"\n`;
+    csv += `"${territorio}","${meta.e}","${meta.m}","${meta.c}","${meta.st}","${meta.a}","${meta.d}","${meta.o}","${meta.l}"\n`;
   });
+  
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -687,8 +740,13 @@ function imprimirRelatorio() {
   window.print();
 }
 
+// ============================================
+// FUNÇÕES DE INTERFACE
+// ============================================
+
 function renderizar() {
   const app = document.getElementById('app');
+  
   if (!dados.ok) {
     app.innerHTML = telaLogin();
   } else {
@@ -701,7 +759,9 @@ function telaLogin() {
     <div class="login">
       <div class="login-box">
         <div class="logo-container">
-          <img class="logo" src="https://lh3.googleusercontent.com/d/1x5sNkC9vd7CI78y0xdkWvgoadxPEMcIf=w800" alt="Prospera Rio">
+          <img class="logo" 
+               src="https://lh3.googleusercontent.com/d/1x5sNkC9vd7CI78y0xdkWvgoadxPEMcIf=w800" 
+               alt="Prospera Rio">
           <div class="location-text">MARÉ · JACAREZINHO</div>
         </div>
         <h3 style="color: var(--azul-principal); margin: 24px 0;">Gestão de Metas e Evidências</h3>
@@ -714,10 +774,16 @@ function telaLogin() {
 
 function telaPrincipal() {
   let conteudo = '';
-  if (dados.visualizacao === 'dashboard') conteudo = telaDashboard();
-  else if (dados.visualizacao === 'mare') conteudo = telaTerritorioCompleta('Maré', dados.metasMare);
-  else if (dados.visualizacao === 'jacarezinho') conteudo = telaTerritorioCompleta('Jacarezinho', dados.metasJacarezinho);
-  else if (dados.visualizacao === 'cadastro') conteudo = telaCadastro();
+  
+  if (dados.visualizacao === 'dashboard') {
+    conteudo = telaDashboard();
+  } else if (dados.visualizacao === 'mare') {
+    conteudo = telaTerritorioCompleta('Maré', dados.metasMare);
+  } else if (dados.visualizacao === 'jacarezinho') {
+    conteudo = telaTerritorioCompleta('Jacarezinho', dados.metasJacarezinho);
+  } else if (dados.visualizacao === 'cadastro') {
+    conteudo = telaCadastro();
+  }
   
   return `
     <div class="hdr">
@@ -730,13 +796,19 @@ function telaPrincipal() {
         </div>
       </div>
       <div class="tabs">
-        <button class="tab ${dados.visualizacao === 'dashboard' ? 'active' : ''}" onclick="mudarVisualizacao('dashboard')">Dashboard</button>
-        <button class="tab ${dados.visualizacao === 'mare' ? 'active' : ''}" onclick="mudarVisualizacao('mare')">Maré</button>
-        <button class="tab ${dados.visualizacao === 'jacarezinho' ? 'active' : ''}" onclick="mudarVisualizacao('jacarezinho')">Jacarezinho</button>
-        <button class="tab ${dados.visualizacao === 'cadastro' ? 'active' : ''}" onclick="mudarVisualizacao('cadastro')">Nova Meta</button>
+        <button class="tab ${dados.visualizacao === 'dashboard' ? 'active' : ''}" 
+                onclick="mudarVisualizacao('dashboard')">Dashboard</button>
+        <button class="tab ${dados.visualizacao === 'mare' ? 'active' : ''}" 
+                onclick="mudarVisualizacao('mare')">Maré</button>
+        <button class="tab ${dados.visualizacao === 'jacarezinho' ? 'active' : ''}" 
+                onclick="mudarVisualizacao('jacarezinho')">Jacarezinho</button>
+        <button class="tab ${dados.visualizacao === 'cadastro' ? 'active' : ''}" 
+                onclick="mudarVisualizacao('cadastro')">Nova Meta</button>
       </div>
     </div>
-    <div class="main">${conteudo}</div>
+    <div class="main">
+      ${conteudo}
+    </div>
   `;
 }
 
@@ -752,24 +824,85 @@ function telaDashboard() {
   
   return `
     <h3 style="color: var(--azul-principal); margin-bottom: 30px;">Visão Geral do Programa</h3>
+    
     <div class="dashboard">
-      <div class="stat-card"><h4>TOTAL DE METAS</h4><div class="stat-number">${statsTotal.total}</div><div class="stat-label">Ambos territórios</div></div>
-      <div class="stat-card"><h4>EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsTotal.emAndamento}</div><div class="stat-label">Ativas no momento</div></div>
-      <div class="stat-card"><h4>ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsTotal.encerradas}</div><div class="stat-label">Concluídas</div></div>
-      <div class="stat-card"><h4>MÉDIA DE PROGRESSO</h4><div class="stat-number" style="color: var(--azul-secundaria);">${statsTotal.mediaProgresso}%</div><div class="stat-label">Progresso geral</div></div>
+      <div class="stat-card">
+        <h4>TOTAL DE METAS</h4>
+        <div class="stat-number">${statsTotal.total}</div>
+        <div class="stat-label">Ambos territórios</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4>EM ANDAMENTO</h4>
+        <div class="stat-number" style="color: #ffc107;">${statsTotal.emAndamento}</div>
+        <div class="stat-label">Ativas no momento</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4>ENCERRADAS</h4>
+        <div class="stat-number" style="color: #28a745;">${statsTotal.encerradas}</div>
+        <div class="stat-label">Concluídas</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4>MÉDIA DE PROGRESSO</h4>
+        <div class="stat-number" style="color: var(--azul-secundaria);">${statsTotal.mediaProgresso}%</div>
+        <div class="stat-label">Progresso geral</div>
+      </div>
     </div>
+    
     <h3 style="color: var(--azul-principal); margin: 40px 0 30px;">Por Território</h3>
+    
     <div class="dashboard">
-      <div class="stat-card mare"><h4>MARÉ - TOTAL</h4><div class="stat-number">${statsMare.total}</div><div class="stat-label">Metas cadastradas</div></div>
-      <div class="stat-card mare"><h4>MARÉ - EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsMare.emAndamento}</div><div class="stat-label">Ativas</div></div>
-      <div class="stat-card mare"><h4>MARÉ - ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsMare.encerradas}</div><div class="stat-label">Concluídas</div></div>
-      <div class="stat-card mare"><h4>MARÉ - PROGRESSO</h4><div class="stat-number" style="color: #00B7D7;">${statsMare.mediaProgresso}%</div><div class="stat-label">Média</div></div>
+      <div class="stat-card mare">
+        <h4>MARÉ - TOTAL</h4>
+        <div class="stat-number">${statsMare.total}</div>
+        <div class="stat-label">Metas cadastradas</div>
+      </div>
+      
+      <div class="stat-card mare">
+        <h4>MARÉ - EM ANDAMENTO</h4>
+        <div class="stat-number" style="color: #ffc107;">${statsMare.emAndamento}</div>
+        <div class="stat-label">Ativas</div>
+      </div>
+      
+      <div class="stat-card mare">
+        <h4>MARÉ - ENCERRADAS</h4>
+        <div class="stat-number" style="color: #28a745;">${statsMare.encerradas}</div>
+        <div class="stat-label">Concluídas</div>
+      </div>
+      
+      <div class="stat-card mare">
+        <h4>MARÉ - PROGRESSO</h4>
+        <div class="stat-number" style="color: #00B7D7;">${statsMare.mediaProgresso}%</div>
+        <div class="stat-label">Média</div>
+      </div>
     </div>
+    
     <div class="dashboard" style="margin-top: 20px;">
-      <div class="stat-card jacarezinho"><h4>JACAREZINHO - TOTAL</h4><div class="stat-number">${statsJacare.total}</div><div class="stat-label">Metas cadastradas</div></div>
-      <div class="stat-card jacarezinho"><h4>JACAREZINHO - EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsJacare.emAndamento}</div><div class="stat-label">Ativas</div></div>
-      <div class="stat-card jacarezinho"><h4>JACAREZINHO - ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsJacare.encerradas}</div><div class="stat-label">Concluídas</div></div>
-      <div class="stat-card jacarezinho"><h4>JACAREZINHO - PROGRESSO</h4><div class="stat-number" style="color: #ECC203;">${statsJacare.mediaProgresso}%</div><div class="stat-label">Média</div></div>
+      <div class="stat-card jacarezinho">
+        <h4>JACAREZINHO - TOTAL</h4>
+        <div class="stat-number">${statsJacare.total}</div>
+        <div class="stat-label">Metas cadastradas</div>
+      </div>
+      
+      <div class="stat-card jacarezinho">
+        <h4>JACAREZINHO - EM ANDAMENTO</h4>
+        <div class="stat-number" style="color: #ffc107;">${statsJacare.emAndamento}</div>
+        <div class="stat-label">Ativas</div>
+      </div>
+      
+      <div class="stat-card jacarezinho">
+        <h4>JACAREZINHO - ENCERRADAS</h4>
+        <div class="stat-number" style="color: #28a745;">${statsJacare.encerradas}</div>
+        <div class="stat-label">Concluídas</div>
+      </div>
+      
+      <div class="stat-card jacarezinho">
+        <h4>JACAREZINHO - PROGRESSO</h4>
+        <div class="stat-number" style="color: #ECC203;">${statsJacare.mediaProgresso}%</div>
+        <div class="stat-label">Média</div>
+      </div>
     </div>
   `;
 }
@@ -782,15 +915,32 @@ function telaTerritorioCompleta(territorio, metas) {
   
   let html = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-      <h3 style="color: var(--azul-principal);">${territorio} - Todas as Metas e Evidências</h3>
+      <h3 style="color: var(--azul-principal);">
+        ${territorio} - Todas as Metas e Evidências
+      </h3>
       <span class="territorio-badge ${territorio.toLowerCase()}">${territorio.toUpperCase()}</span>
     </div>
+    
     <div class="dashboard" style="margin-bottom: 30px;">
-      <div class="stat-card"><h4>TOTAL</h4><div class="stat-number">${stats.total}</div><div class="stat-label">Metas</div></div>
-      <div class="stat-card"><h4>EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${stats.emAndamento}</div></div>
-      <div class="stat-card"><h4>ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${stats.encerradas}</div></div>
-      <div class="stat-card"><h4>PROGRESSO MÉDIO</h4><div class="stat-number" style="color: var(--azul-secundaria);">${stats.mediaProgresso}%</div></div>
+      <div class="stat-card">
+        <h4>TOTAL</h4>
+        <div class="stat-number">${stats.total}</div>
+        <div class="stat-label">Metas</div>
+      </div>
+      <div class="stat-card">
+        <h4>EM ANDAMENTO</h4>
+        <div class="stat-number" style="color: #ffc107;">${stats.emAndamento}</div>
+      </div>
+      <div class="stat-card">
+        <h4>ENCERRADAS</h4>
+        <div class="stat-number" style="color: #28a745;">${stats.encerradas}</div>
+      </div>
+      <div class="stat-card">
+        <h4>PROGRESSO MÉDIO</h4>
+        <div class="stat-number" style="color: var(--azul-secundaria);">${stats.mediaProgresso}%</div>
+      </div>
     </div>
+    
     <div class="filters">
       <div class="filter-group">
         <label>Filtrar por Etapa:</label>
@@ -799,6 +949,7 @@ function telaTerritorioCompleta(territorio, metas) {
           ${obterEtapasUnicas().map(e => `<option value="${e}" ${dados.filtros.etapa === e ? 'selected' : ''}>${e}</option>`).join('')}
         </select>
       </div>
+      
       <div class="filter-group">
         <label>Filtrar por Status:</label>
         <select id="filtroStatus" onchange="aplicarFiltro('status', this.value)">
@@ -807,14 +958,19 @@ function telaTerritorioCompleta(territorio, metas) {
           <option value="Encerrada" ${dados.filtros.status === 'Encerrada' ? 'selected' : ''}>Encerrada</option>
         </select>
       </div>
+      
       <div class="filter-group">
         <label>Data Início:</label>
-        <input type="date" id="filtroDataInicio" value="${dados.filtros.dataInicio}" onchange="aplicarFiltro('dataInicio', this.value)">
+        <input type="date" id="filtroDataInicio" value="${dados.filtros.dataInicio}" 
+               onchange="aplicarFiltro('dataInicio', this.value)">
       </div>
+      
       <div class="filter-group">
         <label>Data Fim:</label>
-        <input type="date" id="filtroDataFim" value="${dados.filtros.dataFim}" onchange="aplicarFiltro('dataFim', this.value)">
+        <input type="date" id="filtroDataFim" value="${dados.filtros.dataFim}" 
+               onchange="aplicarFiltro('dataFim', this.value)">
       </div>
+      
       <div class="filter-group" style="display: flex; align-items: flex-end;">
         <button onclick="limparFiltros()" class="btn-secondary">LIMPAR FILTROS</button>
       </div>
@@ -846,26 +1002,60 @@ function telaTerritorioCompleta(territorio, metas) {
               <span class="meta-id">#${meta.id ? meta.id.substring(0, 8) : 'N/A'}</span>
               <span class="meta-status ${statusClass}">${meta.st || 'Em andamento'}</span>
             </div>
+            
             <p class="meta-texto">${meta.m || 'Sem descrição'}</p>
-            ${progresso > 0 ? `<div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%">${progresso}%</div></div>` : ''}
+            
+            ${progresso > 0 ? `
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progresso}%">${progresso}%</div>
+              </div>
+            ` : ''}
+            
             <div class="meta-info-grid">
-              ${meta.c ? `<div class="meta-info-item"><span class="meta-info-label">Comprovação</span><span class="meta-info-value">${meta.c}</span></div>` : ''}
-              ${meta.d ? `<div class="meta-info-item"><span class="meta-info-label">Data</span><span class="meta-info-value">${formatarData(meta.d)}</span></div>` : ''}
-              ${meta.o ? `<div class="meta-info-item"><span class="meta-info-label">Observações</span><span class="meta-info-value">${meta.o}</span></div>` : ''}
-              ${meta.l ? `<div class="meta-info-item"><span class="meta-info-label">Evidência Principal</span><span class="meta-info-value"><a href="${meta.l}" target="_blank" class="meta-link">Abrir link externo →</a></span></div>` : ''}
-              ${meta.lp ? `<div class="meta-info-item"><span class="meta-info-label">Lista de Presença</span><span class="meta-info-value"><a href="${meta.lp}" target="_blank" class="meta-link">Abrir lista →</a></span></div>` : ''}
-              ${meta.lf ? `<div class="meta-info-item"><span class="meta-info-label">Fotos</span><span class="meta-info-value"><a href="${meta.lf}" target="_blank" class="meta-link">Ver fotos →</a></span></div>` : ''}
-              ${meta.ld ? `<div class="meta-info-item"><span class="meta-info-label">Material de Divulgação</span><span class="meta-info-value"><a href="${meta.ld}" target="_blank" class="meta-link">Ver material →</a></span></div>` : ''}
+              ${meta.c ? `
+                <div class="meta-info-item">
+                  <span class="meta-info-label">Comprovação</span>
+                  <span class="meta-info-value">${meta.c}</span>
+                </div>
+              ` : ''}
+              
+              ${meta.d ? `
+                <div class="meta-info-item">
+                  <span class="meta-info-label">Data</span>
+                  <span class="meta-info-value">${formatarData(meta.d)}</span>
+                </div>
+              ` : ''}
+              
+              ${meta.o ? `
+                <div class="meta-info-item">
+                  <span class="meta-info-label">Observações</span>
+                  <span class="meta-info-value">${meta.o}</span>
+                </div>
+              ` : ''}
+              
+              ${meta.l ? `
+                <div class="meta-info-item">
+                  <span class="meta-info-label">Evidência</span>
+                  <span class="meta-info-value">
+                    <a href="${meta.l}" target="_blank" class="meta-link">Abrir link externo →</a>
+                  </span>
+                </div>
+              ` : ''}
             </div>
+            
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--cinza-neutro);">
-              <button class="btn-danger" onclick="confirmarExclusao('${meta.id}', '${territorio}')">APAGAR META</button>
+              <button class="btn-danger" onclick="confirmarExclusao('${meta.id}', '${territorio}')">
+                APAGAR META
+              </button>
             </div>
           </div>
         `;
       });
+      
       html += '</div>';
     });
   }
+  
   return html;
 }
 
@@ -873,36 +1063,40 @@ function telaCadastro() {
   return `
     <div class="box">
       <h3 class="form-title">Cadastrar Nova Meta</h3>
+      
       <label class="field-required">Território</label>
       <select id="territorio">
         <option value="Maré">Maré</option>
         <option value="Jacarezinho">Jacarezinho</option>
       </select>
+      
       <label class="field-required">Etapa</label>
       <input id="etapa" placeholder="Ex: Etapa 1, Fase Inicial, etc.">
+      
       <label class="field-required">Descrição da Meta</label>
       <textarea id="meta" placeholder="Descreva detalhadamente a meta a ser alcançada e seus objetivos..."></textarea>
+      
       <label>Forma de Comprovação</label>
       <input id="comprovacao" placeholder="Como esta meta será comprovada ou validada?">
+      
       <label>Status da Meta</label>
       <select id="status">
         <option>Em andamento</option>
         <option>Encerrada</option>
       </select>
+      
       <label>Percentual Alcançado (%)</label>
       <input id="alcancada" type="number" placeholder="0 a 100" min="0" max="100">
+      
       <label>Data de Referência</label>
       <input id="data" type="date">
+      
       <label>Observações Adicionais</label>
       <textarea id="observacao" placeholder="Informações complementares, contexto, detalhes relevantes..."></textarea>
-      <label>Link de Evidência Principal</label>
+      
+      <label>Link de Evidência</label>
       <input id="link" placeholder="https://" type="url">
-      <label>Link de Lista de Presença</label>
-      <input id="linkPresenca" placeholder="https://" type="url">
-      <label>Link de Fotos</label>
-      <input id="linkFotos" placeholder="https://" type="url">
-      <label>Link de Material de Divulgação</label>
-      <input id="linkDivulgacao" placeholder="https://" type="url">
+      
       <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--cinza-neutro);">
         <button class="btn-primary" onclick="salvarNovaMeta()" id="btnSalvar">SALVAR META</button>
         <button class="btn-secondary" onclick="mudarVisualizacao('dashboard')">CANCELAR</button>
@@ -910,6 +1104,10 @@ function telaCadastro() {
     </div>
   `;
 }
+
+// ============================================
+// FUNÇÕES DE INTERAÇÃO
+// ============================================
 
 function fazerLogin() {
   const senha = document.getElementById('senha').value;
@@ -940,7 +1138,12 @@ function aplicarFiltro(tipo, valor) {
 }
 
 function limparFiltros() {
-  dados.filtros = { etapa: '', status: '', dataInicio: '', dataFim: '' };
+  dados.filtros = {
+    etapa: '',
+    status: '',
+    dataInicio: '',
+    dataFim: ''
+  };
   renderizar();
 }
 
@@ -957,10 +1160,7 @@ async function salvarNovaMeta() {
     a: document.getElementById('alcancada').value,
     d: document.getElementById('data').value,
     o: document.getElementById('observacao').value.trim(),
-    l: document.getElementById('link').value.trim(),
-    lp: document.getElementById('linkPresenca').value.trim(),
-    lf: document.getElementById('linkFotos').value.trim(),
-    ld: document.getElementById('linkDivulgacao').value.trim()
+    l: document.getElementById('link').value.trim()
   };
   
   const territorio = document.getElementById('territorio').value;
@@ -1002,6 +1202,9 @@ function formatarData(data) {
   return data;
 }
 
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
 renderizar();
 </script>
 </body>
