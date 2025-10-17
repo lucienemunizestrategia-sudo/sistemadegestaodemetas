@@ -639,13 +639,6 @@ async function carregarTodasMetas() {
 
 async function salvarMeta(meta, local) {
   try {
-    // Criar um formulário invisível para fazer a requisição
-    const form = document.createElement('form');
-    form.method = 'GET';
-    form.action = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
-    form.style.display = 'none';
-    
-    // Adicionar parâmetros como campos ocultos
     const params = {
       action: 'add',
       local: local,
@@ -661,44 +654,35 @@ async function salvarMeta(meta, local) {
       fotos: meta.fotos || '',
       materialDivulgacao: meta.materialDivulgacao || ''
     };
-    
-    for (const key in params) {
-      const input = document.createElement('input');
-      input.name = key;
-      input.value = params[key];
-      form.appendChild(input);
-    }
-    
-    document.body.appendChild(form);
-    
-    console.log('Enviando formulário para:', form.action);
+
+    console.log('Enviando dados para:', SCRIPT_URL);
     console.log('Dados:', params);
-    
-    // Usar fetch com modo no-cors
-    const queryString = new URLSearchParams(params).toString();
-    const url = form.action + '?' + queryString;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'no-cors'
+
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST', // Alterado de GET para POST
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(params) // Envia os parâmetros no corpo da requisição
     });
-    
-    console.log('Meta salva com sucesso!');
-    
-    // Aguardar 2 segundos e recarregar
-    await new Promise(r => setTimeout(r, 2000));
-    await carregarTodasMetas();
-    
-    document.body.removeChild(form);
-    return true;
-    
+
+    const result = await response.json(); // Espera uma resposta JSON
+
+    if (result.success) {
+      console.log('Meta salva com sucesso!');
+      await carregarTodasMetas();
+      return true;
+    } else {
+      console.error('Erro ao salvar meta:', result.message);
+      alert('Erro ao salvar meta: ' + result.message);
+      return false;
+    }
+
   } catch (error) {
     console.error('Erro ao salvar:', error);
-    alert('Meta salva! Recarregando dados...');
-    await carregarTodasMetas();
-    return true; // Considera como sucesso mesmo com erro CORS
+    alert('Erro ao salvar meta: ' + error.message + '\n\nVerifique o console (F12) para mais detalhes.');
+    return false;
   }
 }
+
 async function apagarMeta(id, local) {
   try {
     const response = await fetch(SCRIPT_URL, {
