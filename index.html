@@ -638,39 +638,35 @@ async function carregarTodasMetas() {
   }
 }
 
-// ============================================
-// CONFIGURAÇÃO - URL do seu WebApp do Apps Script
-// ============================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
-
-// ============================================
-// FUNÇÃO SALVAR META (corrigida para POST)
-// ============================================
 async function salvarMeta(meta, local) {
   try {
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action: 'add',
-        local: local,
-        e: meta.e || '',
-        m: meta.m || '',
-        c: meta.c || '',
-        st: meta.st || 'Em andamento',
-        a: meta.a || '',
-        d: meta.d || '',
-        o: meta.o || '',
-        l: meta.l || '',
-        listaPresenca: meta.listaPresenca || '',
-        fotos: meta.fotos || '',
-        materialDivulgacao: meta.materialDivulgacao || ''
-      })
+    // Usar GET com query string (funciona melhor com Apps Script)
+    const params = new URLSearchParams({
+      action: 'add',
+      local: local,
+      e: meta.e || '',
+      m: meta.m || '',
+      c: meta.c || '',
+      st: meta.st || 'Em andamento',
+      a: meta.a || '',
+      d: meta.d || '',
+      o: meta.o || '',
+      l: meta.l || '',
+      listaPresenca: meta.listaPresenca || '',
+      fotos: meta.fotos || '',
+      materialDivulgacao: meta.materialDivulgacao || ''
     });
-
-    const result = await response.json();
-    console.log("Resposta do servidor:", result);
-    return result.success;
+    
+    const url = SCRIPT_URL + '?' + params.toString();
+    
+    console.log('=== DEBUG: URL completa ===');
+    console.log(url);
+    
+    // Usar imagem invisível para fazer a requisição
+    const img = new Image();
+    img.src = url;
+    
+    return true;
   } catch (error) {
     console.error('Erro ao salvar:', error);
     return false;
@@ -1257,20 +1253,6 @@ function formatarData(data) {
     return partes[2] + '/' + partes[1] + '/' + partes[0];
   }
   return data;
-}
-
-function debugarSistema() {
-  console.clear();
-  console.log('=== DEBUG DO SISTEMA ===');
-  console.log('URL do Script:', SCRIPT_URL);
-  console.log('Usuário logado:', dados.ok);
-  console.log('Visualização atual:', dados.visualizacao);
-  console.log('Total de metas Maré:', dados.metasMare.length);
-  console.log('Total de metas Jacarezinho:', dados.metasJacarezinho.length);
-  console.log('Metas Maré:', dados.metasMare);
-  console.log('Metas Jacarezinho:', dados.metasJacarezinho);
-  
-  alert('Debug enviado para o console (F12).\n\nVerifique:\n- Total Maré: ' + dados.metasMare.length + '\n- Total Jacarezinho: ' + dados.metasJacarezinho.length);
 }
 
 // ============================================
