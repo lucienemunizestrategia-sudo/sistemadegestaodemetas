@@ -570,7 +570,7 @@ button:disabled {
 // ============================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygYLEnyXroW_oP86mZXRkL0ElYcqFKj9MF0seooXSLtqKtAtnyjI7O4b7vbePEBhGg/exec';
 
-  // ============================================
+// ============================================
 // VARIÁVEIS GLOBAIS
 // ============================================
 var dados = {
@@ -722,11 +722,11 @@ function exportarParaExcel() {
                 dados.visualizacao === 'jacarezinho' ? dados.metasJacarezinho :
                 [...dados.metasMare, ...dados.metasJacarezinho];
   
-  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link\n';
+  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link Evidência,Lista Presença,Fotos,Material Divulgação\n';
   
   metas.forEach(meta => {
     const territorio = dados.metasMare.includes(meta) ? 'Maré' : 'Jacarezinho';
-    csv += `"${territorio}","${meta.e}","${meta.m}","${meta.c}","${meta.st}","${meta.a}","${meta.d}","${meta.o}","${meta.l}"\n`;
+    csv += `"${territorio}","${meta.e}","${meta.m}","${meta.c}","${meta.st}","${meta.a}","${meta.d}","${meta.o}","${meta.l}","${meta.listaPresenca || ''}","${meta.fotos || ''}","${meta.materialDivulgacao || ''}"\n`;
   });
   
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1094,8 +1094,21 @@ function telaCadastro() {
       <label>Observações Adicionais</label>
       <textarea id="observacao" placeholder="Informações complementares, contexto, detalhes relevantes..."></textarea>
       
-      <label>Link de Evidência</label>
+      <h4 style="color: var(--azul-principal); margin-top: 30px; margin-bottom: 15px; border-top: 2px solid var(--cinza-neutro); padding-top: 20px;">
+        EVIDÊNCIAS
+      </h4>
+      
+      <label>Link de Evidência Principal</label>
       <input id="link" placeholder="https://" type="url">
+      
+      <label>Link da Lista de Presença</label>
+      <input id="listaPresenca" placeholder="https://drive.google.com/..." type="url">
+      
+      <label>Link das Fotos</label>
+      <input id="fotos" placeholder="https://drive.google.com/..." type="url">
+      
+      <label>Link do Material de Divulgação</label>
+      <input id="materialDivulgacao" placeholder="https://drive.google.com/..." type="url">
       
       <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--cinza-neutro);">
         <button class="btn-primary" onclick="salvarNovaMeta()" id="btnSalvar">SALVAR META</button>
@@ -1160,7 +1173,10 @@ async function salvarNovaMeta() {
     a: document.getElementById('alcancada').value,
     d: document.getElementById('data').value,
     o: document.getElementById('observacao').value.trim(),
-    l: document.getElementById('link').value.trim()
+    l: document.getElementById('link').value.trim(),
+    listaPresenca: document.getElementById('listaPresenca').value.trim(),
+    fotos: document.getElementById('fotos').value.trim(),
+    materialDivulgacao: document.getElementById('materialDivulgacao').value.trim()
   };
   
   const territorio = document.getElementById('territorio').value;
