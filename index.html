@@ -668,12 +668,12 @@ async function salvarMeta(meta, local) {
 
     if (result.success) {
       console.log('Meta salva com sucesso!');
-      alert('Meta salva com sucesso!');
+      alert('Meta salva com sucesso!'); // Feedback visual
       await carregarTodasMetas();
       return true;
     } else {
       console.error('Erro ao salvar meta:', result.message);
-      alert('Erro ao salvar meta: ' + result.message);
+      alert('Erro ao salvar meta: ' + result.message); // Feedback de erro
       return false;
     }
 
@@ -683,7 +683,6 @@ async function salvarMeta(meta, local) {
     return false;
   }
 }
-
 
 async function apagarMeta(id, local) {
   try {
