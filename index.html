@@ -568,7 +568,7 @@ button:disabled {
 // ============================================
 // CONFIGURAÇÃO
 // ============================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygYLEnyXroW_oP86mZXRkL0ElYcqFKj9MF0seooXSLtqKtAtnyjI7O4b7vbePEBhGg/exec';
 
 // ============================================
 // VARIÁVEIS GLOBAIS
@@ -597,23 +597,43 @@ async function carregarTodasMetas() {
   renderizar();
   
   try {
+    console.log('=== Carregando metas ===');
+    console.log('URL:', SCRIPT_URL);
+    
     const [responseMare, responseJacare] = await Promise.all([
       fetch(SCRIPT_URL + '?action=get&local=Maré'),
       fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
     ]);
     
+    console.log('Response Mare status:', responseMare.status);
+    console.log('Response Jacare status:', responseJacare.status);
+    
     const resultMare = await responseMare.json();
     const resultJacare = await responseJacare.json();
     
-    if (resultMare.success) dados.metasMare = resultMare.data || [];
-    if (resultJacare.success) dados.metasJacarezinho = resultJacare.data || [];
+    console.log('Resultado Maré:', resultMare);
+    console.log('Resultado Jacarezinho:', resultJacare);
+    
+    if (resultMare.success) {
+      dados.metasMare = resultMare.data || [];
+      console.log('Metas Maré carregadas:', dados.metasMare.length);
+    } else {
+      console.error('Erro ao carregar Maré:', resultMare.message);
+    }
+    
+    if (resultJacare.success) {
+      dados.metasJacarezinho = resultJacare.data || [];
+      console.log('Metas Jacarezinho carregadas:', dados.metasJacarezinho.length);
+    } else {
+      console.error('Erro ao carregar Jacarezinho:', resultJacare.message);
+    }
     
     dados.carregando = false;
     renderizar();
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro ao carregar:', error);
     dados.carregando = false;
-    alert('Erro ao carregar dados. Verifique a configuração do SCRIPT_URL.');
+    alert('Erro ao carregar dados: ' + error.message + '\n\nVerifique o console (F12) para mais detalhes.');
     renderizar();
   }
 }
@@ -1233,6 +1253,20 @@ function formatarData(data) {
     return partes[2] + '/' + partes[1] + '/' + partes[0];
   }
   return data;
+}
+
+function debugarSistema() {
+  console.clear();
+  console.log('=== DEBUG DO SISTEMA ===');
+  console.log('URL do Script:', SCRIPT_URL);
+  console.log('Usuário logado:', dados.ok);
+  console.log('Visualização atual:', dados.visualizacao);
+  console.log('Total de metas Maré:', dados.metasMare.length);
+  console.log('Total de metas Jacarezinho:', dados.metasJacarezinho.length);
+  console.log('Metas Maré:', dados.metasMare);
+  console.log('Metas Jacarezinho:', dados.metasJacarezinho);
+  
+  alert('Debug enviado para o console (F12).\n\nVerifique:\n- Total Maré: ' + dados.metasMare.length + '\n- Total Jacarezinho: ' + dados.metasJacarezinho.length);
 }
 
 // ============================================
