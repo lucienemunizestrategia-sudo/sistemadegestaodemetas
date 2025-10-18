@@ -101,7 +101,7 @@ button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
 <script>
 // COLOQUE AQUI A URL DO SEU WEB APP APÓS PUBLICAR
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC5SK1aQXhfrqxJGi_et97sgEPO_yn4nL6aF5DC7qEbgcGKR92RLKocaVkAdo9tr3SAQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVDvWpX_0EHtohFMH2oEGtEUxfHVMiB93gep1eXyRTv7rvDZ55cy1cWtNM8j8J9O1lPw/exec';
 
 const dados = {
   ok: false,
@@ -118,11 +118,44 @@ async function carregarTodasMetas() {
   
   try {
     console.log('Carregando metas...');
+    console.log('URL da API:', SCRIPT_URL);
+    
+    // Testa a conexão primeiro
+    const testUrl = SCRIPT_URL + '?action=test';
+    console.log('Testando conexão:', testUrl);
+    
+    const testResponse = await fetch(testUrl);
+    console.log('Status do teste:', testResponse.status);
+    
+    if (!testResponse.ok) {
+      throw new Error('API não está respondendo (Status: ' + testResponse.status + ')');
+    }
+    
+    const testResult = await testResponse.json();
+    console.log('Resultado do teste:', testResult);
+    
+    if (!testResult.success) {
+      throw new Error('API retornou erro no teste: ' + testResult.message);
+    }
+    
+    // Carrega as metas
+    console.log('Conexão OK! Carregando metas...');
     
     const [responseMare, responseJacare] = await Promise.all([
       fetch(SCRIPT_URL + '?action=get&local=Maré'),
       fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
     ]);
+    
+    console.log('Status Maré:', responseMare.status);
+    console.log('Status Jacarezinho:', responseJacare.status);
+    
+    if (!responseMare.ok) {
+      throw new Error('Erro ao buscar Maré (Status: ' + responseMare.status + ')');
+    }
+    
+    if (!responseJacare.ok) {
+      throw new Error('Erro ao buscar Jacarezinho (Status: ' + responseJacare.status + ')');
+    }
     
     const resultMare = await responseMare.json();
     const resultJacare = await responseJacare.json();
@@ -132,33 +165,49 @@ async function carregarTodasMetas() {
     
     if (resultMare.success) {
       dados.metasMare = resultMare.data || [];
-      console.log('Metas Maré carregadas:', dados.metasMare.length);
+      console.log('✓ Metas Maré carregadas:', dados.metasMare.length);
     } else {
-      console.error('Erro ao carregar Maré:', resultMare.message);
+      console.error('✗ Erro ao carregar Maré:', resultMare.message);
+      alert('Erro ao carregar Maré: ' + resultMare.message);
     }
     
     if (resultJacare.success) {
       dados.metasJacarezinho = resultJacare.data || [];
-      console.log('Metas Jacarezinho carregadas:', dados.metasJacarezinho.length);
+      console.log('✓ Metas Jacarezinho carregadas:', dados.metasJacarezinho.length);
     } else {
-      console.error('Erro ao carregar Jacarezinho:', resultJacare.message);
+      console.error('✗ Erro ao carregar Jacarezinho:', resultJacare.message);
+      alert('Erro ao carregar Jacarezinho: ' + resultJacare.message);
     }
     
     dados.carregando = false;
     renderizar();
     
   } catch (error) {
-    console.error('Erro ao carregar:', error);
+    console.error('ERRO CRÍTICO:', error);
+    console.error('Stack:', error.stack);
     dados.carregando = false;
-    alert('Erro ao carregar dados: ' + error.message);
+    
+    let mensagemErro = 'Erro ao carregar dados:\n\n' + error.message;
+    
+    if (error.message.includes('Failed to fetch')) {
+      mensagemErro += '\n\n🔴 PROBLEMA DE CONEXÃO:\n\n';
+      mensagemErro += '1. Verifique se a URL do SCRIPT_URL está correta\n';
+      mensagemErro += '2. Verifique se o Web App foi publicado como "Qualquer pessoa"\n';
+      mensagemErro += '3. Teste a URL diretamente no navegador:\n';
+      mensagemErro += SCRIPT_URL + '?action=test';
+    }
+    
+    alert(mensagemErro);
     renderizar();
   }
 }
 
 async function salvarMeta(meta, local) {
   try {
-    console.log('Salvando meta em:', local);
+    console.log('=== SALVANDO META ===');
+    console.log('Local:', local);
     console.log('Dados:', meta);
+    console.log('URL:', SCRIPT_URL);
     
     const params = {
       action: 'add',
@@ -176,6 +225,8 @@ async function salvarMeta(meta, local) {
       materialDivulgacao: meta.materialDivulgacao || ''
     };
     
+    console.log('Params completos:', JSON.stringify(params, null, 2));
+    
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: {
@@ -184,22 +235,40 @@ async function salvarMeta(meta, local) {
       body: JSON.stringify(params)
     });
     
+    console.log('Status da resposta:', response.status);
+    console.log('Status OK?', response.ok);
+    
+    if (!response.ok) {
+      throw new Error('Erro HTTP: ' + response.status + ' - ' + response.statusText);
+    }
+    
     const result = await response.json();
-    console.log('Resultado:', result);
+    console.log('Resultado completo:', result);
     
     if (result.success) {
-      console.log('Meta salva com sucesso!');
+      console.log('✓ Meta salva com sucesso!');
+      console.log('ID gerado:', result.id);
       await carregarTodasMetas();
       return true;
     } else {
-      console.error('Erro ao salvar:', result.message);
-      alert('Erro ao salvar meta: ' + result.message);
+      console.error('✗ Erro retornado pela API:', result.message);
+      alert('Erro ao salvar meta:\n\n' + result.message);
       return false;
     }
     
   } catch (error) {
-    console.error('Erro ao salvar:', error);
-    alert('Erro ao salvar meta: ' + error.message);
+    console.error('ERRO CRÍTICO ao salvar:', error);
+    console.error('Stack:', error.stack);
+    
+    let mensagemErro = 'Erro ao salvar meta:\n\n' + error.message;
+    
+    if (error.message.includes('Failed to fetch')) {
+      mensagemErro += '\n\n🔴 PROBLEMA DE CONEXÃO:\n\n';
+      mensagemErro += 'Verifique se o Web App está publicado corretamente\n';
+      mensagemErro += 'e se a URL está correta no código.';
+    }
+    
+    alert(mensagemErro);
     return false;
   }
 }
