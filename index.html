@@ -5,15 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão de Metas e Evidências - Prospera Rio</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-* { 
-  margin: 0; 
-  padding: 0; 
-  box-sizing: border-box; 
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
   --azul-principal: #092040;
   --azul-secundaria: #00B7D7;
@@ -22,542 +15,81 @@
   --azul-escuro: #021738;
   --branco: #FFFFFF;
 }
-
-body { 
-  font-family: 'Open Sans', sans-serif; 
-  background: var(--cinza-neutro); 
-  color: var(--azul-escuro);
-  line-height: 1.6;
-}
-
-h1, h2, h3, h4 { 
-  font-family: 'Montserrat', sans-serif; 
-  font-weight: 700;
-}
-
-h1 { font-size: 44px; }
-h2 { font-size: 32px; }
-h3 { font-size: 28px; font-weight: 600; }
-h4 { font-size: 20px; }
-
-.hdr { 
-  background: var(--azul-principal); 
-  color: var(--branco); 
-  padding: 20px 40px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.hdr-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.hdr h2 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.hdr-btns button {
-  background: var(--amarelo-acento);
-  color: var(--azul-escuro);
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  margin-left: 10px;
-  transition: all 0.3s;
-  text-transform: uppercase;
-}
-
-.hdr-btns button:hover { 
-  background: #d4ac02;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(236, 194, 3, 0.3);
-}
-
-.tabs {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.tab {
-  background: rgba(255,255,255,0.1);
-  color: var(--branco);
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px 6px 0 0;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-transform: uppercase;
-}
-
-.tab:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.tab.active {
-  background: var(--amarelo-acento);
-  color: var(--azul-escuro);
-}
-
-.main { 
-  padding: 40px 20px; 
-  max-width: 1400px; 
-  margin: 0 auto; 
-}
-
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-.stat-card {
-  background: var(--branco);
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08);
-  border-left: 5px solid var(--azul-secundaria);
-  transition: all 0.3s;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(2, 23, 56, 0.12);
-}
-
-.stat-card.mare {
-  border-left-color: #00B7D7;
-}
-
-.stat-card.jacarezinho {
-  border-left-color: #ECC203;
-}
-
-.stat-card h4 {
-  color: var(--azul-escuro);
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-.stat-number {
-  font-size: 48px;
-  font-weight: 700;
-  color: var(--azul-principal);
-  font-family: 'Montserrat', sans-serif;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #6c757d;
-  margin-top: 5px;
-}
-
-.filters {
-  background: var(--branco);
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08);
-  margin-bottom: 30px;
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.filter-group {
-  flex: 1;
-  min-width: 200px;
-}
-
-input, textarea, select { 
-  width: 100%; 
-  padding: 12px 16px; 
-  margin: 8px 0; 
-  border: 2px solid var(--azul-secundaria); 
-  border-radius: 6px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  background: var(--branco);
-  color: var(--azul-escuro);
-  transition: all 0.3s;
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--azul-principal);
-  box-shadow: 0 0 0 3px rgba(0, 183, 215, 0.1);
-}
-
-textarea { 
-  min-height: 100px; 
-  resize: vertical;
-}
-
-label {
-  display: block;
-  font-weight: 600;
-  color: var(--azul-escuro);
-  margin-top: 16px;
-  margin-bottom: 6px;
-  font-size: 16px;
-}
-
-button { 
-  padding: 14px 28px; 
-  margin: 8px 8px 8px 0; 
-  background: var(--azul-secundaria); 
-  color: var(--branco); 
-  border: none; 
-  cursor: pointer; 
-  border-radius: 6px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-button:hover { 
-  background: #0099b8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 183, 215, 0.3);
-}
-
-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-primary {
-  background: var(--azul-secundaria);
-  font-size: 16px;
-  padding: 16px 32px;
-}
-
-.btn-action {
-  background: var(--amarelo-acento);
-  color: var(--azul-escuro);
-}
-
-.btn-secondary {
-  background: #6c757d;
-}
-
-.btn-danger {
-  background: #dc3545;
-}
-
-.btn-success {
-  background: #28a745;
-}
-
-.box { 
-  background: var(--branco); 
-  padding: 32px; 
-  margin: 24px 0; 
-  border-radius: 8px; 
-  box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08);
-  border-left: 4px solid var(--azul-secundaria);
-}
-
-.login { 
-  min-height: 100vh; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-secundaria) 100%);
-}
-
-.login-box {
-  background: var(--branco);
-  padding: 50px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  text-align: center;
-  max-width: 500px;
-  width: 90%;
-}
-
-.logo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 20px;
-  max-width: 280px;
-  height: auto;
-}
-
-.location-text {
-  color: var(--amarelo-acento);
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 2px;
-}
-
-.etapa-section {
-  background: var(--branco);
-  padding: 32px;
-  margin: 24px 0;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08);
-}
-
-.etapa-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 16px;
-  border-bottom: 3px solid var(--amarelo-acento);
-  margin-bottom: 24px;
-}
-
-.etapa-title {
-  color: var(--azul-principal);
-  font-size: 28px;
-  font-weight: 700;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.etapa-count {
-  background: var(--azul-secundaria);
-  color: var(--branco);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.meta-card {
-  background: #f8f9fa;
-  padding: 24px;
-  margin: 16px 0;
-  border-radius: 8px;
-  border-left: 5px solid var(--azul-secundaria);
-  transition: all 0.3s;
-}
-
-.meta-card:hover {
-  box-shadow: 0 4px 16px rgba(2, 23, 56, 0.12);
-  transform: translateX(4px);
-}
-
-.meta-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.meta-id {
-  color: #6c757d;
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
-}
-
-.meta-status {
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.status-andamento {
-  background: #fff3cd;
-  color: #856404;
-  border: 2px solid #ffc107;
-}
-
-.status-encerrada {
-  background: #d4edda;
-  color: #155724;
-  border: 2px solid #28a745;
-}
-
-.meta-texto {
-  color: var(--azul-escuro);
-  line-height: 1.8;
-  margin: 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.meta-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin: 20px 0;
-  padding: 20px;
-  background: var(--branco);
-  border-radius: 8px;
-}
-
-.meta-info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.meta-info-label {
-  color: var(--azul-principal);
-  font-weight: 700;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.meta-info-value {
-  color: var(--azul-escuro);
-  font-size: 16px;
-}
-
-.meta-link {
-  color: var(--azul-secundaria);
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s;
-}
-
-.meta-link:hover {
-  color: var(--azul-principal);
-  text-decoration: underline;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 30px;
-  background: #e9ecef;
-  border-radius: 15px;
-  overflow: hidden;
-  margin: 10px 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--azul-secundaria), var(--amarelo-acento));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--branco);
-  font-weight: 700;
-  transition: width 0.5s ease;
-}
-
-.territorio-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.territorio-badge.mare {
-  background: #00B7D7;
-  color: var(--branco);
-}
-
-.territorio-badge.jacarezinho {
-  background: #ECC203;
-  color: var(--azul-escuro);
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--azul-secundaria);
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.vazio {
-  text-align: center;
-  color: #6c757d;
-  padding: 60px 20px;
-  font-size: 18px;
-}
-
-.form-title {
-  color: var(--azul-principal);
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  border-bottom: 4px solid var(--amarelo-acento);
-  padding-bottom: 12px;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.field-required::after {
-  content: " *";
-  color: #dc3545;
-  font-weight: 700;
-}
-
-.export-section {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 20px 0;
-}
-
-@media print {
-  .hdr-btns, .filters, .export-section, button {
-    display: none !important;
-  }
-}
-
+body { font-family: 'Open Sans', sans-serif; background: var(--cinza-neutro); color: var(--azul-escuro); line-height: 1.6; }
+h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; font-weight: 700; }
+h1 { font-size: 44px; } h2 { font-size: 32px; } h3 { font-size: 28px; font-weight: 600; } h4 { font-size: 20px; }
+.hdr { background: var(--azul-principal); color: var(--branco); padding: 20px 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.hdr-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.hdr h2 { font-size: 28px; font-weight: 700; letter-spacing: 0.5px; }
+.hdr-btns button { background: var(--amarelo-acento); color: var(--azul-escuro); padding: 12px 24px; border: none; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; margin-left: 10px; transition: all 0.3s; text-transform: uppercase; }
+.hdr-btns button:hover { background: #d4ac02; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(236, 194, 3, 0.3); }
+.tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+.tab { background: rgba(255,255,255,0.1); color: var(--branco); padding: 12px 24px; border: none; border-radius: 6px 6px 0 0; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; }
+.tab:hover { background: rgba(255,255,255,0.2); }
+.tab.active { background: var(--amarelo-acento); color: var(--azul-escuro); }
+.main { padding: 40px 20px; max-width: 1400px; margin: 0 auto; }
+.dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+.stat-card { background: var(--branco); padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08); border-left: 5px solid var(--azul-secundaria); transition: all 0.3s; }
+.stat-card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(2, 23, 56, 0.12); }
+.stat-card.mare { border-left-color: #00B7D7; }
+.stat-card.jacarezinho { border-left-color: #ECC203; }
+.stat-card h4 { color: var(--azul-escuro); margin-bottom: 10px; font-size: 16px; }
+.stat-number { font-size: 48px; font-weight: 700; color: var(--azul-principal); font-family: 'Montserrat', sans-serif; }
+.stat-label { font-size: 14px; color: #6c757d; margin-top: 5px; }
+.filters { background: var(--branco); padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08); margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+.filter-group { flex: 1; min-width: 200px; }
+input, textarea, select { width: 100%; padding: 12px 16px; margin: 8px 0; border: 2px solid var(--azul-secundaria); border-radius: 6px; font-family: 'Open Sans', sans-serif; font-size: 16px; background: var(--branco); color: var(--azul-escuro); transition: all 0.3s; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--azul-principal); box-shadow: 0 0 0 3px rgba(0, 183, 215, 0.1); }
+textarea { min-height: 100px; resize: vertical; }
+label { display: block; font-weight: 600; color: var(--azul-escuro); margin-top: 16px; margin-bottom: 6px; font-size: 16px; }
+button { padding: 14px 28px; margin: 8px 8px 8px 0; background: var(--azul-secundaria); color: var(--branco); border: none; cursor: pointer; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 14px; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; }
+button:hover { background: #0099b8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 183, 215, 0.3); }
+button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--azul-secundaria); font-size: 16px; padding: 16px 32px; }
+.btn-secondary { background: #6c757d; }
+.btn-danger { background: #dc3545; }
+.btn-success { background: #28a745; }
+.box { background: var(--branco); padding: 32px; margin: 24px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08); border-left: 4px solid var(--azul-secundaria); }
+.login { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-secundaria) 100%); }
+.login-box { background: var(--branco); padding: 50px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); text-align: center; max-width: 500px; width: 90%; }
+.logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 30px; }
+.logo { display: block; margin: 0 auto 20px; max-width: 280px; height: auto; }
+.location-text { color: var(--amarelo-acento); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 2px; }
+.etapa-section { background: var(--branco); padding: 32px; margin: 24px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 23, 56, 0.08); }
+.etapa-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 3px solid var(--amarelo-acento); margin-bottom: 24px; }
+.etapa-title { color: var(--azul-principal); font-size: 28px; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+.etapa-count { background: var(--azul-secundaria); color: var(--branco); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 16px; }
+.meta-card { background: #f8f9fa; padding: 24px; margin: 16px 0; border-radius: 8px; border-left: 5px solid var(--azul-secundaria); transition: all 0.3s; }
+.meta-card:hover { box-shadow: 0 4px 16px rgba(2, 23, 56, 0.12); transform: translateX(4px); }
+.meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.meta-id { color: #6c757d; font-size: 14px; font-family: 'Courier New', monospace; }
+.meta-status { padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif; }
+.status-andamento { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+.status-encerrada { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+.meta-texto { color: var(--azul-escuro); line-height: 1.8; margin: 16px 0; font-size: 18px; font-weight: 600; }
+.meta-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0; padding: 20px; background: var(--branco); border-radius: 8px; }
+.meta-info-item { display: flex; flex-direction: column; gap: 4px; }
+.meta-info-label { color: var(--azul-principal); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+.meta-info-value { color: var(--azul-escuro); font-size: 16px; }
+.meta-link { color: var(--azul-secundaria); text-decoration: none; font-weight: 600; transition: all 0.3s; }
+.meta-link:hover { color: var(--azul-principal); text-decoration: underline; }
+.progress-bar { width: 100%; height: 30px; background: #e9ecef; border-radius: 15px; overflow: hidden; margin: 10px 0; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--azul-secundaria), var(--amarelo-acento)); display: flex; align-items: center; justify-content: center; color: var(--branco); font-weight: 700; transition: width 0.5s ease; }
+.territorio-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.territorio-badge.mare, .territorio-badge.maré { background: #00B7D7; color: var(--branco); }
+.territorio-badge.jacarezinho { background: #ECC203; color: var(--azul-escuro); }
+.loading { text-align: center; padding: 60px 20px; color: var(--azul-secundaria); font-weight: 600; font-size: 18px; }
+.vazio { text-align: center; color: #6c757d; padding: 60px 20px; font-size: 18px; }
+.form-title { color: var(--azul-principal); font-size: 28px; font-weight: 700; margin-bottom: 24px; border-bottom: 4px solid var(--amarelo-acento); padding-bottom: 12px; font-family: 'Montserrat', sans-serif; }
+.field-required::after { content: " *"; color: #dc3545; font-weight: 700; }
+@media print { .hdr-btns, .filters, button { display: none !important; } }
 @media (max-width: 768px) {
-  .hdr-top {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-  
-  .filters {
-    flex-direction: column;
-  }
-  
-  h1 { font-size: 32px; }
-  h2 { font-size: 24px; }
-  h3 { font-size: 20px; }
-  
-  .logo {
-    max-width: 200px;
-  }
-  
-  .meta-info-grid {
-    grid-template-columns: 1fr;
-  }
+  .hdr-top { flex-direction: column; gap: 16px; }
+  .dashboard { grid-template-columns: 1fr; }
+  .filters { flex-direction: column; }
+  h1 { font-size: 32px; } h2 { font-size: 24px; } h3 { font-size: 20px; }
+  .logo { max-width: 200px; }
+  .meta-info-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -565,74 +97,35 @@ button:disabled {
 <div id="app"></div>
 
 <script>
-// ============================================
-// CONFIGURAÇÃO
-// ============================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYi7mEll9Y8RcDCfK7GM87vVZy9JXDnvxqk-RtfkQoXZzE_ebj8MXV7_vNx-3kuZ_4/exec';
-// ============================================
-// VARIÁVEIS GLOBAIS
-// ============================================
+
 var dados = {
   ok: false,
-  visualizacao: 'dashboard', // dashboard, mare, jacarezinho, cadastro
+  visualizacao: 'dashboard',
   metasMare: [],
   metasJacarezinho: [],
-  mostrarForm: false,
   carregando: false,
-  filtros: {
-    etapa: '',
-    status: '',
-    dataInicio: '',
-    dataFim: ''
-  }
+  filtros: { etapa: '', status: '', dataInicio: '', dataFim: '' }
 };
-
-// ============================================
-// FUNÇÕES DE API
-// ============================================
 
 async function carregarTodasMetas() {
   dados.carregando = true;
   renderizar();
-  
   try {
-    console.log('=== Carregando metas ===');
-    console.log('URL:', SCRIPT_URL);
-    
     const [responseMare, responseJacare] = await Promise.all([
       fetch(SCRIPT_URL + '?action=get&local=Maré'),
       fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
     ]);
-    
-    console.log('Response Mare status:', responseMare.status);
-    console.log('Response Jacare status:', responseJacare.status);
-    
     const resultMare = await responseMare.json();
     const resultJacare = await responseJacare.json();
-    
-    console.log('Resultado Maré:', resultMare);
-    console.log('Resultado Jacarezinho:', resultJacare);
-    
-    if (resultMare.success) {
-      dados.metasMare = resultMare.data || [];
-      console.log('Metas Maré carregadas:', dados.metasMare.length);
-    } else {
-      console.error('Erro ao carregar Maré:', resultMare.message);
-    }
-    
-    if (resultJacare.success) {
-      dados.metasJacarezinho = resultJacare.data || [];
-      console.log('Metas Jacarezinho carregadas:', dados.metasJacarezinho.length);
-    } else {
-      console.error('Erro ao carregar Jacarezinho:', resultJacare.message);
-    }
-    
+    if (resultMare.success) dados.metasMare = resultMare.data || [];
+    if (resultJacare.success) dados.metasJacarezinho = resultJacare.data || [];
     dados.carregando = false;
     renderizar();
   } catch (error) {
-    console.error('Erro ao carregar:', error);
+    console.error('Erro:', error);
     dados.carregando = false;
-    alert('Erro ao carregar dados: ' + error.message + '\n\nVerifique o console (F12) para mais detalhes.');
+    alert('Erro ao carregar dados: ' + error.message);
     renderizar();
   }
 }
@@ -654,32 +147,26 @@ async function salvarMeta(meta, local) {
       fotos: meta.fotos || '',
       materialDivulgacao: meta.materialDivulgacao || ''
     };
-
     console.log('Enviando dados para:', SCRIPT_URL);
     console.log('Dados:', params);
-
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, // Mude para application/json
-      body: JSON.stringify(params) // Envie como uma string JSON
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
     });
-
     const result = await response.json();
-
     if (result.success) {
       console.log('Meta salva com sucesso!');
-      alert('Meta salva com sucesso!'); // Feedback visual
       await carregarTodasMetas();
       return true;
     } else {
       console.error('Erro ao salvar meta:', result.message);
-      alert('Erro ao salvar meta: ' + result.message); // Feedback de erro
+      alert('Erro ao salvar meta: ' + result.message);
       return false;
     }
-
   } catch (error) {
     console.error('Erro ao salvar:', error);
-    alert('Erro ao salvar meta: ' + error.message + '\n\nVerifique o console (F12) para mais detalhes.');
+    alert('Erro ao salvar meta: ' + error.message);
     return false;
   }
 }
@@ -688,16 +175,10 @@ async function apagarMeta(id, local) {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        action: 'delete',
-        local: local,
-        id: id
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', local: local, id: id })
     });
-    
     const result = await response.json();
-    
     if (result.success) {
       await carregarTodasMetas();
       return true;
@@ -711,25 +192,19 @@ async function apagarMeta(id, local) {
   }
 }
 
-// ============================================
-// FUNÇÕES DE ESTATÍSTICAS
-// ============================================
-
 function calcularEstatisticas(metas) {
   return {
     total: metas.length,
-    emAndamento: metas.filter(m => m.st === 'Em andamento').length,
-    encerradas: metas.filter(m => m.st === 'Encerrada').length,
-    mediaProgresso: metas.length > 0 
-      ? Math.round(metas.reduce((acc, m) => acc + (parseInt(m.a) || 0), 0) / metas.length)
-      : 0
+    emAndamento: metas.filter(m => m.Status === 'Em andamento').length,
+    encerradas: metas.filter(m => m.Status === 'Encerrada').length,
+    mediaProgresso: metas.length > 0 ? Math.round(metas.reduce((acc, m) => acc + (parseInt(m.Alcancada) || 0), 0) / metas.length) : 0
   };
 }
 
 function agruparPorEtapa(metas) {
   const grupos = {};
   metas.forEach(meta => {
-    const etapa = meta.e || 'Sem Etapa';
+    const etapa = meta.Etapa || 'Sem Etapa';
     if (!grupos[etapa]) grupos[etapa] = [];
     grupos[etapa].push(meta);
   });
@@ -738,36 +213,29 @@ function agruparPorEtapa(metas) {
 
 function filtrarMetas(metas) {
   return metas.filter(meta => {
-    if (dados.filtros.etapa && meta.e !== dados.filtros.etapa) return false;
-    if (dados.filtros.status && meta.st !== dados.filtros.status) return false;
-    if (dados.filtros.dataInicio && meta.d < dados.filtros.dataInicio) return false;
-    if (dados.filtros.dataFim && meta.d > dados.filtros.dataFim) return false;
+    if (dados.filtros.etapa && meta.Etapa !== dados.filtros.etapa) return false;
+    if (dados.filtros.status && meta.Status !== dados.filtros.status) return false;
+    if (dados.filtros.dataInicio && meta.Data < dados.filtros.dataInicio) return false;
+    if (dados.filtros.dataFim && meta.Data > dados.filtros.dataFim) return false;
     return true;
   });
 }
 
 function obterEtapasUnicas() {
   const todasMetas = [...dados.metasMare, ...dados.metasJacarezinho];
-  const etapas = [...new Set(todasMetas.map(m => m.e).filter(e => e))];
+  const etapas = [...new Set(todasMetas.map(m => m.Etapa).filter(e => e))];
   return etapas.sort();
 }
-
-// ============================================
-// FUNÇÕES DE EXPORTAÇÃO
-// ============================================
 
 function exportarParaExcel() {
   const metas = dados.visualizacao === 'mare' ? dados.metasMare :
                 dados.visualizacao === 'jacarezinho' ? dados.metasJacarezinho :
                 [...dados.metasMare, ...dados.metasJacarezinho];
-  
-  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link Evidência,Lista Presença,Fotos,Material Divulgação\n';
-  
+  let csv = 'Território,Etapa,Meta,Comprovação,Status,Alcançada (%),Data,Observações,Link,Lista Presença,Fotos,Material Divulgação\n';
   metas.forEach(meta => {
     const territorio = dados.metasMare.includes(meta) ? 'Maré' : 'Jacarezinho';
-    csv += `"${territorio}","${meta.e}","${meta.m}","${meta.c}","${meta.st}","${meta.a}","${meta.d}","${meta.o}","${meta.l}","${meta.listaPresenca || ''}","${meta.fotos || ''}","${meta.materialDivulgacao || ''}"\n`;
+    csv += `"${territorio}","${meta.Etapa||''}","${meta.Meta||''}","${meta.Comprovacao||''}","${meta.Status||''}","${meta.Alcancada||''}","${meta.Data||''}","${meta.Observacao||''}","${meta.Link||''}","${meta.ListaPresenca||''}","${meta.Fotos||''}","${meta.MaterialDivulgacao||''}"\n`;
   });
-  
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -775,22 +243,11 @@ function exportarParaExcel() {
   link.click();
 }
 
-function imprimirRelatorio() {
-  window.print();
-}
-
-// ============================================
-// FUNÇÕES DE INTERFACE
-// ============================================
-
+function imprimirRelatorio() { window.print(); }
 function renderizar() {
   const app = document.getElementById('app');
-  
-  if (!dados.ok) {
-    app.innerHTML = telaLogin();
-  } else {
-    app.innerHTML = telaPrincipal();
-  }
+  if (!dados.ok) { app.innerHTML = telaLogin(); }
+  else { app.innerHTML = telaPrincipal(); }
 }
 
 function telaLogin() {
@@ -798,9 +255,7 @@ function telaLogin() {
     <div class="login">
       <div class="login-box">
         <div class="logo-container">
-          <img class="logo" 
-               src="https://lh3.googleusercontent.com/d/1x5sNkC9vd7CI78y0xdkWvgoadxPEMcIf=w800" 
-               alt="Prospera Rio">
+          <img class="logo" src="https://lh3.googleusercontent.com/d/1x5sNkC9vd7CI78y0xdkWvgoadxPEMcIf=w800" alt="Prospera Rio">
           <div class="location-text">MARÉ · JACAREZINHO</div>
         </div>
         <h3 style="color: var(--azul-principal); margin: 24px 0;">Gestão de Metas e Evidências</h3>
@@ -813,17 +268,10 @@ function telaLogin() {
 
 function telaPrincipal() {
   let conteudo = '';
-  
-  if (dados.visualizacao === 'dashboard') {
-    conteudo = telaDashboard();
-  } else if (dados.visualizacao === 'mare') {
-    conteudo = telaTerritorioCompleta('Maré', dados.metasMare);
-  } else if (dados.visualizacao === 'jacarezinho') {
-    conteudo = telaTerritorioCompleta('Jacarezinho', dados.metasJacarezinho);
-  } else if (dados.visualizacao === 'cadastro') {
-    conteudo = telaCadastro();
-  }
-  
+  if (dados.visualizacao === 'dashboard') conteudo = telaDashboard();
+  else if (dados.visualizacao === 'mare') conteudo = telaTerritorioCompleta('Maré', dados.metasMare);
+  else if (dados.visualizacao === 'jacarezinho') conteudo = telaTerritorioCompleta('Jacarezinho', dados.metasJacarezinho);
+  else if (dados.visualizacao === 'cadastro') conteudo = telaCadastro();
   return `
     <div class="hdr">
       <div class="hdr-top">
@@ -835,19 +283,13 @@ function telaPrincipal() {
         </div>
       </div>
       <div class="tabs">
-        <button class="tab ${dados.visualizacao === 'dashboard' ? 'active' : ''}" 
-                onclick="mudarVisualizacao('dashboard')">Dashboard</button>
-        <button class="tab ${dados.visualizacao === 'mare' ? 'active' : ''}" 
-                onclick="mudarVisualizacao('mare')">Maré</button>
-        <button class="tab ${dados.visualizacao === 'jacarezinho' ? 'active' : ''}" 
-                onclick="mudarVisualizacao('jacarezinho')">Jacarezinho</button>
-        <button class="tab ${dados.visualizacao === 'cadastro' ? 'active' : ''}" 
-                onclick="mudarVisualizacao('cadastro')">Nova Meta</button>
+        <button class="tab ${dados.visualizacao === 'dashboard' ? 'active' : ''}" onclick="mudarVisualizacao('dashboard')">Dashboard</button>
+        <button class="tab ${dados.visualizacao === 'mare' ? 'active' : ''}" onclick="mudarVisualizacao('mare')">Maré</button>
+        <button class="tab ${dados.visualizacao === 'jacarezinho' ? 'active' : ''}" onclick="mudarVisualizacao('jacarezinho')">Jacarezinho</button>
+        <button class="tab ${dados.visualizacao === 'cadastro' ? 'active' : ''}" onclick="mudarVisualizacao('cadastro')">Nova Meta</button>
       </div>
     </div>
-    <div class="main">
-      ${conteudo}
-    </div>
+    <div class="main">${conteudo}</div>
   `;
 }
 
@@ -860,88 +302,26 @@ function telaDashboard() {
     encerradas: statsMare.encerradas + statsJacare.encerradas,
     mediaProgresso: Math.round((statsMare.mediaProgresso + statsJacare.mediaProgresso) / 2)
   };
-  
   return `
     <h3 style="color: var(--azul-principal); margin-bottom: 30px;">Visão Geral do Programa</h3>
-    
     <div class="dashboard">
-      <div class="stat-card">
-        <h4>TOTAL DE METAS</h4>
-        <div class="stat-number">${statsTotal.total}</div>
-        <div class="stat-label">Ambos territórios</div>
-      </div>
-      
-      <div class="stat-card">
-        <h4>EM ANDAMENTO</h4>
-        <div class="stat-number" style="color: #ffc107;">${statsTotal.emAndamento}</div>
-        <div class="stat-label">Ativas no momento</div>
-      </div>
-      
-      <div class="stat-card">
-        <h4>ENCERRADAS</h4>
-        <div class="stat-number" style="color: #28a745;">${statsTotal.encerradas}</div>
-        <div class="stat-label">Concluídas</div>
-      </div>
-      
-      <div class="stat-card">
-        <h4>MÉDIA DE PROGRESSO</h4>
-        <div class="stat-number" style="color: var(--azul-secundaria);">${statsTotal.mediaProgresso}%</div>
-        <div class="stat-label">Progresso geral</div>
-      </div>
+      <div class="stat-card"><h4>TOTAL DE METAS</h4><div class="stat-number">${statsTotal.total}</div><div class="stat-label">Ambos territórios</div></div>
+      <div class="stat-card"><h4>EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsTotal.emAndamento}</div><div class="stat-label">Ativas</div></div>
+      <div class="stat-card"><h4>ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsTotal.encerradas}</div><div class="stat-label">Concluídas</div></div>
+      <div class="stat-card"><h4>MÉDIA PROGRESSO</h4><div class="stat-number" style="color: var(--azul-secundaria);">${statsTotal.mediaProgresso}%</div><div class="stat-label">Geral</div></div>
     </div>
-    
     <h3 style="color: var(--azul-principal); margin: 40px 0 30px;">Por Território</h3>
-    
     <div class="dashboard">
-      <div class="stat-card mare">
-        <h4>MARÉ - TOTAL</h4>
-        <div class="stat-number">${statsMare.total}</div>
-        <div class="stat-label">Metas cadastradas</div>
-      </div>
-      
-      <div class="stat-card mare">
-        <h4>MARÉ - EM ANDAMENTO</h4>
-        <div class="stat-number" style="color: #ffc107;">${statsMare.emAndamento}</div>
-        <div class="stat-label">Ativas</div>
-      </div>
-      
-      <div class="stat-card mare">
-        <h4>MARÉ - ENCERRADAS</h4>
-        <div class="stat-number" style="color: #28a745;">${statsMare.encerradas}</div>
-        <div class="stat-label">Concluídas</div>
-      </div>
-      
-      <div class="stat-card mare">
-        <h4>MARÉ - PROGRESSO</h4>
-        <div class="stat-number" style="color: #00B7D7;">${statsMare.mediaProgresso}%</div>
-        <div class="stat-label">Média</div>
-      </div>
+      <div class="stat-card mare"><h4>MARÉ - TOTAL</h4><div class="stat-number">${statsMare.total}</div></div>
+      <div class="stat-card mare"><h4>MARÉ - ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsMare.emAndamento}</div></div>
+      <div class="stat-card mare"><h4>MARÉ - ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsMare.encerradas}</div></div>
+      <div class="stat-card mare"><h4>MARÉ - PROGRESSO</h4><div class="stat-number" style="color: #00B7D7;">${statsMare.mediaProgresso}%</div></div>
     </div>
-    
     <div class="dashboard" style="margin-top: 20px;">
-      <div class="stat-card jacarezinho">
-        <h4>JACAREZINHO - TOTAL</h4>
-        <div class="stat-number">${statsJacare.total}</div>
-        <div class="stat-label">Metas cadastradas</div>
-      </div>
-      
-      <div class="stat-card jacarezinho">
-        <h4>JACAREZINHO - EM ANDAMENTO</h4>
-        <div class="stat-number" style="color: #ffc107;">${statsJacare.emAndamento}</div>
-        <div class="stat-label">Ativas</div>
-      </div>
-      
-      <div class="stat-card jacarezinho">
-        <h4>JACAREZINHO - ENCERRADAS</h4>
-        <div class="stat-number" style="color: #28a745;">${statsJacare.encerradas}</div>
-        <div class="stat-label">Concluídas</div>
-      </div>
-      
-      <div class="stat-card jacarezinho">
-        <h4>JACAREZINHO - PROGRESSO</h4>
-        <div class="stat-number" style="color: #ECC203;">${statsJacare.mediaProgresso}%</div>
-        <div class="stat-label">Média</div>
-      </div>
+      <div class="stat-card jacarezinho"><h4>JACAREZINHO - TOTAL</h4><div class="stat-number">${statsJacare.total}</div></div>
+      <div class="stat-card jacarezinho"><h4>JACAREZINHO - ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${statsJacare.emAndamento}</div></div>
+      <div class="stat-card jacarezinho"><h4>JACAREZINHO - ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${statsJacare.encerradas}</div></div>
+      <div class="stat-card jacarezinho"><h4>JACAREZINHO - PROGRESSO</h4><div class="stat-number" style="color: #ECC203;">${statsJacare.mediaProgresso}%</div></div>
     </div>
   `;
 }
@@ -951,35 +331,17 @@ function telaTerritorioCompleta(territorio, metas) {
   const gruposPorEtapa = agruparPorEtapa(metasFiltradas);
   const etapas = Object.keys(gruposPorEtapa).sort();
   const stats = calcularEstatisticas(metas);
-  
   let html = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-      <h3 style="color: var(--azul-principal);">
-        ${territorio} - Todas as Metas e Evidências
-      </h3>
+      <h3 style="color: var(--azul-principal);">${territorio} - Todas as Metas e Evidências</h3>
       <span class="territorio-badge ${territorio.toLowerCase()}">${territorio.toUpperCase()}</span>
     </div>
-    
     <div class="dashboard" style="margin-bottom: 30px;">
-      <div class="stat-card">
-        <h4>TOTAL</h4>
-        <div class="stat-number">${stats.total}</div>
-        <div class="stat-label">Metas</div>
-      </div>
-      <div class="stat-card">
-        <h4>EM ANDAMENTO</h4>
-        <div class="stat-number" style="color: #ffc107;">${stats.emAndamento}</div>
-      </div>
-      <div class="stat-card">
-        <h4>ENCERRADAS</h4>
-        <div class="stat-number" style="color: #28a745;">${stats.encerradas}</div>
-      </div>
-      <div class="stat-card">
-        <h4>PROGRESSO MÉDIO</h4>
-        <div class="stat-number" style="color: var(--azul-secundaria);">${stats.mediaProgresso}%</div>
-      </div>
+      <div class="stat-card"><h4>TOTAL</h4><div class="stat-number">${stats.total}</div></div>
+      <div class="stat-card"><h4>EM ANDAMENTO</h4><div class="stat-number" style="color: #ffc107;">${stats.emAndamento}</div></div>
+      <div class="stat-card"><h4>ENCERRADAS</h4><div class="stat-number" style="color: #28a745;">${stats.encerradas}</div></div>
+      <div class="stat-card"><h4>PROGRESSO MÉDIO</h4><div class="stat-number" style="color: var(--azul-secundaria);">${stats.mediaProgresso}%</div></div>
     </div>
-    
     <div class="filters">
       <div class="filter-group">
         <label>Filtrar por Etapa:</label>
@@ -988,7 +350,6 @@ function telaTerritorioCompleta(territorio, metas) {
           ${obterEtapasUnicas().map(e => `<option value="${e}" ${dados.filtros.etapa === e ? 'selected' : ''}>${e}</option>`).join('')}
         </select>
       </div>
-      
       <div class="filter-group">
         <label>Filtrar por Status:</label>
         <select id="filtroStatus" onchange="aplicarFiltro('status', this.value)">
@@ -997,25 +358,19 @@ function telaTerritorioCompleta(territorio, metas) {
           <option value="Encerrada" ${dados.filtros.status === 'Encerrada' ? 'selected' : ''}>Encerrada</option>
         </select>
       </div>
-      
       <div class="filter-group">
         <label>Data Início:</label>
-        <input type="date" id="filtroDataInicio" value="${dados.filtros.dataInicio}" 
-               onchange="aplicarFiltro('dataInicio', this.value)">
+        <input type="date" id="filtroDataInicio" value="${dados.filtros.dataInicio}" onchange="aplicarFiltro('dataInicio', this.value)">
       </div>
-      
       <div class="filter-group">
         <label>Data Fim:</label>
-        <input type="date" id="filtroDataFim" value="${dados.filtros.dataFim}" 
-               onchange="aplicarFiltro('dataFim', this.value)">
+        <input type="date" id="filtroDataFim" value="${dados.filtros.dataFim}" onchange="aplicarFiltro('dataFim', this.value)">
       </div>
-      
       <div class="filter-group" style="display: flex; align-items: flex-end;">
         <button onclick="limparFiltros()" class="btn-secondary">LIMPAR FILTROS</button>
       </div>
     </div>
   `;
-  
   if (dados.carregando) {
     html += '<div class="loading">Carregando dados...</div>';
   } else if (metasFiltradas.length === 0) {
@@ -1023,78 +378,36 @@ function telaTerritorioCompleta(territorio, metas) {
   } else {
     etapas.forEach(etapa => {
       const metasEtapa = gruposPorEtapa[etapa];
-      html += `
-        <div class="etapa-section">
-          <div class="etapa-header">
-            <h3 class="etapa-title">${etapa}</h3>
-            <span class="etapa-count">${metasEtapa.length} meta${metasEtapa.length !== 1 ? 's' : ''}</span>
-          </div>
-      `;
-      
+      html += `<div class="etapa-section"><div class="etapa-header"><h3 class="etapa-title">${etapa}</h3><span class="etapa-count">${metasEtapa.length} meta${metasEtapa.length !== 1 ? 's' : ''}</span></div>`;
       metasEtapa.forEach(meta => {
-        const statusClass = meta.st === 'Encerrada' ? 'status-encerrada' : 'status-andamento';
-        const progresso = parseInt(meta.a) || 0;
-        
+        const statusClass = meta.Status === 'Encerrada' ? 'status-encerrada' : 'status-andamento';
+        const progresso = parseInt(meta.Alcancada) || 0;
         html += `
           <div class="meta-card">
             <div class="meta-header">
-              <span class="meta-id">#${meta.id ? meta.id.substring(0, 8) : 'N/A'}</span>
-              <span class="meta-status ${statusClass}">${meta.st || 'Em andamento'}</span>
+              <span class="meta-id">#${meta.ID ? meta.ID.substring(0, 8) : 'N/A'}</span>
+              <span class="meta-status ${statusClass}">${meta.Status || 'Em andamento'}</span>
             </div>
-            
-            <p class="meta-texto">${meta.m || 'Sem descrição'}</p>
-            
-            ${progresso > 0 ? `
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${progresso}%">${progresso}%</div>
-              </div>
-            ` : ''}
-            
+            <p class="meta-texto">${meta.Meta || 'Sem descrição'}</p>
+            ${progresso > 0 ? `<div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%">${progresso}%</div></div>` : ''}
             <div class="meta-info-grid">
-              ${meta.c ? `
-                <div class="meta-info-item">
-                  <span class="meta-info-label">Comprovação</span>
-                  <span class="meta-info-value">${meta.c}</span>
-                </div>
-              ` : ''}
-              
-              ${meta.d ? `
-                <div class="meta-info-item">
-                  <span class="meta-info-label">Data</span>
-                  <span class="meta-info-value">${formatarData(meta.d)}</span>
-                </div>
-              ` : ''}
-              
-              ${meta.o ? `
-                <div class="meta-info-item">
-                  <span class="meta-info-label">Observações</span>
-                  <span class="meta-info-value">${meta.o}</span>
-                </div>
-              ` : ''}
-              
-              ${meta.l ? `
-                <div class="meta-info-item">
-                  <span class="meta-info-label">Evidência</span>
-                  <span class="meta-info-value">
-                    <a href="${meta.l}" target="_blank" class="meta-link">Abrir link externo →</a>
-                  </span>
-                </div>
-              ` : ''}
+              ${meta.Comprovacao ? `<div class="meta-info-item"><span class="meta-info-label">Comprovação</span><span class="meta-info-value">${meta.Comprovacao}</span></div>` : ''}
+              ${meta.Data ? `<div class="meta-info-item"><span class="meta-info-label">Data</span><span class="meta-info-value">${formatarData(meta.Data)}</span></div>` : ''}
+              ${meta.Observacao ? `<div class="meta-info-item"><span class="meta-info-label">Observações</span><span class="meta-info-value">${meta.Observacao}</span></div>` : ''}
+              ${meta.Link ? `<div class="meta-info-item"><span class="meta-info-label">Evidência Principal</span><span class="meta-info-value"><a href="${meta.Link}" target="_blank" class="meta-link">Abrir link →</a></span></div>` : ''}
+              ${meta.ListaPresenca ? `<div class="meta-info-item"><span class="meta-info-label">Lista de Presença</span><span class="meta-info-value"><a href="${meta.ListaPresenca}" target="_blank" class="meta-link">Abrir lista →</a></span></div>` : ''}
+              ${meta.Fotos ? `<div class="meta-info-item"><span class="meta-info-label">Fotos</span><span class="meta-info-value"><a href="${meta.Fotos}" target="_blank" class="meta-link">Ver fotos →</a></span></div>` : ''}
+              ${meta.MaterialDivulgacao ? `<div class="meta-info-item"><span class="meta-info-label">Material de Divulgação</span><span class="meta-info-value"><a href="${meta.MaterialDivulgacao}" target="_blank" class="meta-link">Ver material →</a></span></div>` : ''}
             </div>
-            
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--cinza-neutro);">
-              <button class="btn-danger" onclick="confirmarExclusao('${meta.id}', '${territorio}')">
-                APAGAR META
-              </button>
+              <button class="btn-danger" onclick="confirmarExclusao('${meta.ID}', '${territorio}')">APAGAR META</button>
             </div>
           </div>
         `;
       });
-      
       html += '</div>';
     });
   }
-  
   return html;
 }
 
@@ -1102,53 +415,37 @@ function telaCadastro() {
   return `
     <div class="box">
       <h3 class="form-title">Cadastrar Nova Meta</h3>
-      
       <label class="field-required">Território</label>
       <select id="territorio">
         <option value="Maré">Maré</option>
         <option value="Jacarezinho">Jacarezinho</option>
       </select>
-      
       <label class="field-required">Etapa</label>
       <input id="etapa" placeholder="Ex: Etapa 1, Fase Inicial, etc.">
-      
       <label class="field-required">Descrição da Meta</label>
-      <textarea id="meta" placeholder="Descreva detalhadamente a meta a ser alcançada e seus objetivos..."></textarea>
-      
+      <textarea id="meta" placeholder="Descreva detalhadamente a meta a ser alcançada..."></textarea>
       <label>Forma de Comprovação</label>
-      <input id="comprovacao" placeholder="Como esta meta será comprovada ou validada?">
-      
+      <input id="comprovacao" placeholder="Como esta meta será comprovada?">
       <label>Status da Meta</label>
       <select id="status">
         <option>Em andamento</option>
         <option>Encerrada</option>
       </select>
-      
       <label>Percentual Alcançado (%)</label>
       <input id="alcancada" type="number" placeholder="0 a 100" min="0" max="100">
-      
       <label>Data de Referência</label>
       <input id="data" type="date">
-      
       <label>Observações Adicionais</label>
-      <textarea id="observacao" placeholder="Informações complementares, contexto, detalhes relevantes..."></textarea>
-      
-      <h4 style="color: var(--azul-principal); margin-top: 30px; margin-bottom: 15px; border-top: 2px solid var(--cinza-neutro); padding-top: 20px;">
-        EVIDÊNCIAS
-      </h4>
-      
+      <textarea id="observacao" placeholder="Informações complementares..."></textarea>
+      <h4 style="color: var(--azul-principal); margin-top: 30px; margin-bottom: 15px; border-top: 2px solid var(--cinza-neutro); padding-top: 20px;">EVIDÊNCIAS</h4>
       <label>Link de Evidência Principal</label>
       <input id="link" placeholder="https://" type="url">
-      
       <label>Link da Lista de Presença</label>
       <input id="listaPresenca" placeholder="https://drive.google.com/..." type="url">
-      
       <label>Link das Fotos</label>
       <input id="fotos" placeholder="https://drive.google.com/..." type="url">
-      
       <label>Link do Material de Divulgação</label>
       <input id="materialDivulgacao" placeholder="https://drive.google.com/..." type="url">
-      
       <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--cinza-neutro);">
         <button class="btn-primary" onclick="salvarNovaMeta()" id="btnSalvar">SALVAR META</button>
         <button class="btn-secondary" onclick="mudarVisualizacao('dashboard')">CANCELAR</button>
@@ -1156,10 +453,6 @@ function telaCadastro() {
     </div>
   `;
 }
-
-// ============================================
-// FUNÇÕES DE INTERAÇÃO
-// ============================================
 
 function fazerLogin() {
   const senha = document.getElementById('senha').value;
@@ -1190,12 +483,7 @@ function aplicarFiltro(tipo, valor) {
 }
 
 function limparFiltros() {
-  dados.filtros = {
-    etapa: '',
-    status: '',
-    dataInicio: '',
-    dataFim: ''
-  };
+  dados.filtros = { etapa: '', status: '', dataInicio: '', dataFim: '' };
   renderizar();
 }
 
@@ -1227,22 +515,13 @@ async function salvarNovaMeta() {
     return;
   }
   
-  console.log('=== DEBUG: Salvando meta ===');
-  console.log('Território:', territorio);
-  console.log('Dados:', meta);
-  
   const sucesso = await salvarMeta(meta, territorio);
   
   if (sucesso) {
-    // Aguardar 3 segundos para o Google processar
-    setTimeout(async () => {
-      await carregarTodasMetas();
-      alert('Meta cadastrada! Verifique na planilha do Google Sheets.');
-      dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
-      renderizar();
-    }, 3000);
+    alert('Meta cadastrada com sucesso!');
+    dados.visualizacao = territorio === 'Maré' ? 'mare' : 'jacarezinho';
+    renderizar();
   } else {
-    alert('Erro ao salvar. Verifique o console (F12).');
     btnSalvar.disabled = false;
     btnSalvar.textContent = 'SALVAR META';
   }
@@ -1266,9 +545,6 @@ function formatarData(data) {
   return data;
 }
 
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
 renderizar();
 </script>
 </body>
