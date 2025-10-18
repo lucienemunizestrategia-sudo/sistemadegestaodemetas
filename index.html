@@ -113,8 +113,8 @@ async function carregarTodasMetas() {
   renderizar();
   try {
     const [responseMare, responseJacare] = await Promise.all([
-      fetch(SCRIPT_URL + '?action=get&local=Maré'),
-      fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
+    fetch(SCRIPT_URL + '?action=get&local=Mare'),
+   fetch(SCRIPT_URL + '?action=get&local=Jacarezinho')
     ]);
     const resultMare = await responseMare.json();
     const resultJacare = await responseJacare.json();
