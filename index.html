@@ -625,31 +625,35 @@ async function carregarTodasMetas() {
 
 async function salvarMeta(meta, local) {
   try {
-    const params = new URLSearchParams({
+    // Criar objeto com TODOS os dados incluindo local
+    const dados = {
       action: 'add',
-      local: local,
+      local: local,           // Campo obrigatório
       etapa: meta.e || '',
       meta: meta.m || '',
       comprovacao: meta.c || '',
-      status: meta.st || '',
-      alcancada: meta.a || '',
+      status: meta.st || 'Em andamento',
+      alcancada: meta.a || '0',
       data: meta.d || '',
       observacao: meta.o || '',
       link: meta.l || '',
       listaPresenca: meta.lp || '',
       fotos: meta.lf || '',
       materialDivulgacao: meta.ld || ''
-    });
+    };
+    
+    console.log('Enviando dados:', dados);
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: params.toString()
+      body: new URLSearchParams(dados).toString()
     });
     
     const result = await response.json();
+    console.log('Resposta do servidor:', result);
     
     if (result.success) {
       await carregarTodasMetas();
@@ -659,7 +663,7 @@ async function salvarMeta(meta, local) {
     }
   } catch (error) {
     console.error('Erro completo:', error);
-    alert('Erro ao salvar meta. Verifique:\n\n1. Se o Google Apps Script está publicado como "Web app"\n2. Se o acesso está configurado como "Qualquer pessoa"\n3. Se a URL está correta\n\nErro: ' + error.message);
+    alert('Erro ao salvar meta:\n\n' + error.message + '\n\nVerifique o Console (F12) para mais detalhes.');
     return false;
   }
 }
