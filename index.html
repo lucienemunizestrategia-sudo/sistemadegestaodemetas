@@ -50,12 +50,20 @@ h4 { font-size: 20px; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .hdr h2 {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.5px;
+}
+
+.hdr-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .hdr-btns button {
@@ -68,15 +76,35 @@ h4 { font-size: 20px; }
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  margin-left: 10px;
   transition: all 0.3s;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hdr-btns button:hover { 
   background: #d4ac02;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(236, 194, 3, 0.3);
+}
+
+.hdr-btns button.btn-atendimento {
+  background: var(--azul-secundaria);
+  color: var(--branco);
+}
+
+.hdr-btns button.btn-atendimento:hover {
+  background: #0099b8;
+}
+
+.hdr-btns button.btn-diagnostico {
+  background: var(--azul-principal);
+  color: var(--branco);
+  border: 2px solid var(--amarelo-acento);
+}
+
+.hdr-btns button.btn-diagnostico:hover {
+  background: var(--azul-escuro);
+  border-color: var(--amarelo-acento);
 }
 
 .tabs {
@@ -255,7 +283,13 @@ button:disabled {
 }
 
 .btn-success {
-  background: #28a745;
+  background: var(--azul-secundaria);
+  border: 2px solid var(--azul-secundaria);
+}
+
+.btn-success:hover {
+  background: #0099b8;
+  border-color: #0099b8;
 }
 
 .box { 
@@ -556,7 +590,7 @@ button:disabled {
 <div id="app"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVDvWpX_0EHtohFMH2oEGtEUxfHVMiB93gep1eXyRTv7rvDZ55cy1cWtNM8j8J9O1lPw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxO0m2uqlrWqsLYezkI5rgidH_hwNG83PkyK4YTIM31FpNTEeSCLHnDgxJEtkEwZFyBVw/exec';
 
 var dados = {
   ok: false,
@@ -606,27 +640,6 @@ async function salvarMeta(meta, local) {
   } catch (error) {
     console.error('Erro:', error);
     alert('Erro ao salvar meta: ' + error.message);
-    return false;
-  }
-}
-
-async function apagarMeta(id, local) {
-  try {
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'delete', local: local, id: id })
-    });
-    const result = await response.json();
-    if (result.success) {
-      await carregarTodasMetas();
-      return true;
-    } else {
-      throw new Error(result.message || 'Erro ao apagar');
-    }
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao apagar meta: ' + error.message);
     return false;
   }
 }
@@ -686,6 +699,18 @@ function imprimirRelatorio() {
   window.print();
 }
 
+function abrirDiagnostico() {
+  window.open('https://lucienemunizestrategia-sudo.github.io/diagnosticoempresarial/', '_blank');
+}
+
+function abrirAtendimentoMare() {
+  window.open('https://lucienemunizestrategia-sudo.github.io/atendimentomare/', '_blank');
+}
+
+function abrirAtendimentoJacarezinho() {
+  window.open('https://lucienemunizestrategia-sudo.github.io/consultorias/', '_blank');
+}
+
 function renderizar() {
   const app = document.getElementById('app');
   if (!dados.ok) {
@@ -723,6 +748,9 @@ function telaPrincipal() {
       <div class="hdr-top">
         <h2>PROSPERA RIO - GESTÃO DE METAS</h2>
         <div class="hdr-btns">
+          <button onclick="abrirDiagnostico()" class="btn-diagnostico">DIAGNÓSTICO</button>
+          <button onclick="abrirAtendimentoMare()" class="btn-atendimento">ATENDIMENTO MARÉ</button>
+          <button onclick="abrirAtendimentoJacarezinho()" class="btn-atendimento">ATENDIMENTO JACAREZINHO</button>
           <button onclick="exportarParaExcel()" class="btn-success">EXPORTAR EXCEL</button>
           <button onclick="imprimirRelatorio()">IMPRIMIR</button>
           <button onclick="sair()">SAIR</button>
@@ -856,9 +884,6 @@ function telaTerritorioCompleta(territorio, metas) {
               ${meta.lf ? `<div class="meta-info-item"><span class="meta-info-label">Fotos</span><span class="meta-info-value"><a href="${meta.lf}" target="_blank" class="meta-link">Ver fotos →</a></span></div>` : ''}
               ${meta.ld ? `<div class="meta-info-item"><span class="meta-info-label">Material de Divulgação</span><span class="meta-info-value"><a href="${meta.ld}" target="_blank" class="meta-link">Ver material →</a></span></div>` : ''}
             </div>
-            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--cinza-neutro);">
-              <button class="btn-danger" onclick="confirmarExclusao('${meta.id}', '${territorio}')">APAGAR META</button>
-            </div>
           </div>
         `;
       });
@@ -980,15 +1005,6 @@ async function salvarNovaMeta() {
   } else {
     btnSalvar.disabled = false;
     btnSalvar.textContent = 'SALVAR META';
-  }
-}
-
-async function confirmarExclusao(id, territorio) {
-  if (confirm('ATENÇÃO: Deseja realmente apagar esta meta?\n\nEsta ação não pode ser desfeita.')) {
-    const sucesso = await apagarMeta(id, territorio);
-    if (sucesso) {
-      alert('Meta apagada com sucesso.');
-    }
   }
 }
 
