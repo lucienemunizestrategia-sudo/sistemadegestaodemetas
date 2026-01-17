@@ -628,32 +628,35 @@ async function salvarMeta(meta, local) {
     const params = new URLSearchParams({
       action: 'add',
       local: local,
-      e: meta.e || '',
-      m: meta.m || '',
-      c: meta.c || '',
-      st: meta.st || '',
-      a: meta.a || '',
-      d: meta.d || '',
-      o: meta.o || '',
-      l: meta.l || '',
-      lp: meta.lp || '',
-      lf: meta.lf || '',
-      ld: meta.ld || ''
+      etapa: meta.e || '',
+      meta: meta.m || '',
+      comprovacao: meta.c || '',
+      status: meta.st || '',
+      alcancada: meta.a || '',
+      data: meta.d || '',
+      observacao: meta.o || '',
+      link: meta.l || '',
+      listaPresenca: meta.lp || '',
+      fotos: meta.lf || '',
+      materialDivulgacao: meta.ld || ''
     });
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: params.toString()
     });
     
-    // Com no-cors, assumimos sucesso se não houver erro
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await carregarTodasMetas();
-    return true;
+    const result = await response.json();
+    
+    if (result.success) {
+      await carregarTodasMetas();
+      return true;
+    } else {
+      throw new Error(result.message || 'Erro ao salvar');
+    }
   } catch (error) {
     console.error('Erro completo:', error);
     alert('Erro ao salvar meta. Verifique:\n\n1. Se o Google Apps Script está publicado como "Web app"\n2. Se o acesso está configurado como "Qualquer pessoa"\n3. Se a URL está correta\n\nErro: ' + error.message);
